@@ -1,0 +1,165 @@
+#calendar {
+    width: 960px;
+    height: 1040px;
+    padding-top: 30px;
+    float: left;
+}
+
+#scheduler {
+    width: 1305px !important;
+}
+
+#browse{
+    margin-left:80px
+}
+
+#seldep {
+    margin-left:10px;
+}
+
+#searchgroup{
+    margin-top:6px;
+}
+
+#coursedumpholder {
+    float: left;
+    width: 325px;
+    padding-top:30px;
+    margin-left:13px;
+}
+
+#clist {
+    height: calc(1040px - 220px);
+    overflow-y: auto;
+}
+
+#pastedir {
+    margin-top:1px;
+}
+
+.removebtn {
+    float: right;
+}
+.removebtn:hover {
+    cursor: pointer;
+}
+.cremovebtn {
+    
+}
+.cremovebtn:hover {
+    cursor: pointer;
+}
+
+.list {
+    border-radius: 5px;
+    color:white;
+    padding: 3px 3px 3px 3px;
+    margin-bottom: 5px;
+    border: 2px solid black;
+}
+
+/*.list:hover{
+    border: 2px dashed #E6E6E6 !important;
+}*/
+
+.list:hover .glyphicon-remove-circle{
+    visibility: visible;
+}
+
+.glyphicon-remove-circle{
+    visibility: visible;
+}
+
+.ctitle { /*for <td>*/
+    width: 400px;
+}
+
+.tnum {
+    width: 50px;
+    text-align: center;
+}
+
+.tcenter {
+    text-align: center;
+}
+
+.cal_header {
+    float:left;
+    width: 148px;
+    text-align: center;
+    margin-right: 20px; /*VERY IMPORTANT FOR EVENT PUSHING */
+    font-weight: bold;
+}
+
+.cal_header#space{
+    width: 70px;
+    border: none;
+}
+
+.time{
+    clear:both;
+    width: calc(100% - 20px);
+    height: 59px;
+    border-top: 1px solid #E6E6E6;      
+    position: relative;
+    float: left;
+}
+
+/* ^ space between times = 50px; box including space and 1px border = 52px */
+/* the insertion in HTML div time slots determines the y, the time; css determines the x, the day */
+
+.m{
+    width: 148px;
+    height: 50px; /* <---- anomaly */
+    left: calc(80px);
+    float:left;
+    border: 1px solid #000000;      
+    position: absolute;
+    z-index:1;
+    
+    margin-right: 20px;
+}
+.t{
+    width: 148px;
+    height: 50px; /* <---- anomaly */
+    left: calc(80px + 150px + 20px - 2px);
+    float:left;
+    border: 1px solid #000000;      
+    position: absolute;
+    z-index:2;
+    
+    margin-right: 20px;
+}
+.w{
+    width: 148px;
+    height: 50px; /* <---- anomaly */
+    left: calc(80px + 150px + 20px + 150px + 20px - 4px);
+    float:left;
+    border: 1px solid #000000;      
+    position: absolute;
+    z-index:3;
+    
+    margin-right: 20px;
+}
+.r{
+    width: 148px;
+    height: 50px; /* <---- anomaly */
+    left: calc(80px + 150px + 20px + 150px + 20px + 150px + 20px - 6px);
+    float:left;
+    border: 1px solid #000000;
+    position: absolute;
+    z-index:4;
+    
+    margin-right: 20px;
+}
+.f{
+    width: 148px;
+    height: 50px; /* <---- anomaly */
+    left: calc(80px + 150px + 20px + 150px + 20px + 150px + 20px + 150px + 20px - 8px);
+    float:left;
+    border: 1px solid #000000; 
+    position: absolute;
+    z-index:5;
+    
+    margin-right: 20px;
+}

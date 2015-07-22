@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!--<link rel="stylesheet" type="text/css" href="bootstrap.min.css"/>-->
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+        
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script> 
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
+        <script src="http://linkbroker.hu/stuff/kolorwheel.js/KolorWheel.min.js"></script>
+        
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        
+        <script src="app.js"></script>
+    </head>
+    <body ng-app="courser" ng-controller='courseListCtrl'>
+        <div class="container" id="scheduler">
+            <div class="row">
+
+                    <div id="calendar">
+                        <div class="cal_header" id="space">&nbsp</div>
+                        <div class="cal_header">Monday</div>
+                        <div class="cal_header">Tuesday</div>
+                        <div class="cal_header">Wednesday</div>
+                        <div class="cal_header">Thursday</div>
+                        <div class="cal_header">Friday</div>
+                        <div id="time_holder">
+                            <div class="time" id="7a">7:00 a.m.</div>
+                            <div class="time" id="8a">8:00 a.m.</div>  
+                            <div class="time" id="9a">9:00 a.m.</div>
+                            <div class="time" id="10a">10:00 a.m.</div>
+                            <div class="time" id="11a">11:00 a.m.</div>
+                            <div class="time" id="12p">12:00 a.m.</div>
+                            <div class="time" id="1p">1:00 p.m.</div>
+                            <div class="time" id="2p">2:00 p.m.</div>
+                            <div class="time" id="3p">3:00 p.m.</div>
+                            <div class="time" id="4p">4:00 p.m.</div>
+                            <div class="time" id="5p">5:00 p.m.</div>
+                            <div class="time" id="6p">6:00 p.m.</div>
+                            <div class="time" id="7p">7:00 p.m.</div>
+                            <div class="time" id="8p">8:00 p.m.</div>
+                            <div class="time" id="9p">9:00 p.m.</div>
+                            <div class="time" id="10p">10:00 p.m.</div>
+                            <div class="time" id="11p">11:00 p.m.</div>
+                        </div>
+                    </div>
+
+
+                    <div id="coursedumpholder">
+                        <p class="help-block" id="pastedir" for="coursedump"><b>Scroll down and click on a course to add it.</b> Or, insert text containing CRNs here. You can even copy and paste the text from the Add/Drop Classes page of myRegistration!</p>
+                        <textarea class="form-control" id="coursedump"></textarea>
+                        <button type="submit" ng-mouseup="parseDump()" style="margin-bottom:35px;">Add</button>
+                        <button type="submit" ng-mouseup="clear()">Clear calendar</button>
+                        <button type="submit" ng-hide="localStorage.crns !== undefined" ng-mouseup="forget()">Forget CRNs</button>
+                        <div id="clist">
+                            
+                        </div>
+                    </div>
+
+            </div>
+        </div>
+        
+        <div class="container">
+        <div class="row">
+        <div class="col-lg-12">
+        <form class="form-inline" id="browse">
+        <div class="form-group" id="searchgroup">
+            <span class="input-group">
+            <label for="search">Enter CRN, Course #, Course Title, Subject, or Instructor:</label>
+            <input class="form-control input-lg" id="search" type="text" ng-model="course">
+            </span>
+            <span class="input-group" id="seldep">
+            <label for="seldep">Department:</label>
+                <select class="form-control" ng-init="filter['department'] = departments[0]" ng-model="filter['department']" ng-options="department as department for department in departments"></select>
+            
+            </span>
+        </div>
+        <div class="form-group" id="searchopts">
+            <label class="checkbox-inline"><input type="checkbox" ng-model="filter['litAll']"/>Show literally ALL classes/results</label>
+            <label class="checkbox-inline"><input type="checkbox" ng-model="filter['closed']"/>Show closed classes</label>
+            <label class="checkbox-inline"><input type="checkbox" ng-model="filter['incTBD']"/>Show classes with time TBD</label>
+        </div>
+        </form>
+        </div>
+        </div>
+        </div>
+        
+        
+        <br>
+        <div class="container-fluid" id="searchresults">
+            <table class="table table-striped table-hover" style="width:100%">
+                <tr style="background-color:#10458B; color:white">
+                    <th style="text-align: center; width: 230px">Department</th>
+                    <th style="text-align: center">CRN</th>
+                    <th style="text-align: center; width: 190px">Course Number</th>
+                    <th class="ctitle" style="text-align: center">Title</th>
+                    <th style="text-align: center; width:30px">Units</th>
+                    <th style="text-align: center">Activity</th>
+                    <th style="text-align: center; width:65px">Days</th>
+                    <th style="text-align: center; width:125px">Time</th>
+                    <th style="text-align: center; width:110px">Location</th>
+                    <th style="text-align: center; width:130px">Term</th>
+                    <th style="text-align: center; width: 220px">Instructor</th>
+                    <th style="border-right-style: none">Seats: </th>
+                    <th style="border-left-style: none; border-right-style: none" class="tnum">Max</th>
+                    <th style="border-left-style: none; border-right-style: none" class="tnum">Taken</th>
+                    <th style="border-left-style: none" class="enrl">Open</th>
+                </tr>
+                <tr class="courserow" data-crn="{{course.CRN}}" ng-style="listColor(course.CRN)" ng-repeat="course in courses | filter: filter['department'] : filterByDepartment | filter: filterInClosed | filter: filterInTBD | filter:course | filter:limitAll : true" ng-if="course.actv != 'EXAM'" ng-mouseup="toggleSchedule(course)">
+                    <td style="text-align: center">{{course.department}}</td>
+                    <td style="text-align: center">{{course.CRN}}</td>
+                    <td style="text-align: center">{{course.cnum}}</td>
+                    <td class="ctitle">{{course.ctitle}}</td>
+                    <td class="tcenter tnum">{{course.units}}</td>
+                    <td style="text-align: center">{{course.actv}}</td>
+                    <td style="text-align: center">{{course.days}}</td>
+                    <td style="width:110px">{{course.time | timeCorrect}}</td>
+                    <td style="text-align: center">{{course.loc}}</td>
+                    <td style="text-align: center">{{course.term}}</td>
+                    <td style="border-right-style: none; width: 220px">{{course.instructor}}</td>
+                    <td style="width:0px; border-left-style: none">&nbsp;</td>
+                    <td class="tnum">{{course.max_enrl}}</td>
+                    <td class="tnum">{{course.act_enrl}}</td>
+                    <td class="tnum">{{course.seats_avail}}</td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>
