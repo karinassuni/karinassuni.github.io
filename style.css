@@ -43,11 +43,11 @@
 .removebtn:hover {
     cursor: pointer;
 }
-.cremovebtn {
-    
-}
-.cremovebtn:hover {
-    cursor: pointer;
+
+#uptodate {
+    padding-left: 17px;
+    float:left;
+    color: #C6C6C6;
 }
 
 .list {

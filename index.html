@@ -52,7 +52,7 @@
                         <p class="help-block" id="pastedir" for="coursedump"><b>Scroll down and click on a course to add it.</b> Or, insert text containing CRNs here. You can even copy and paste the text from the Add/Drop Classes page of myRegistration!</p>
                         <textarea class="form-control" id="coursedump"></textarea>
                         <button type="submit" ng-mouseup="parseDump()" style="margin-bottom:35px;">Add</button>
-                        <button type="submit" ng-mouseup="clear()">Clear calendar</button>
+                        <!--<button type="submit" ng-mouseup="clear()">Clear calendar</button>-->
                         <button type="submit" ng-hide="localStorage.crns !== undefined" ng-mouseup="forget()">Forget CRNs</button>
                         <div id="clist">
                             
@@ -86,7 +86,7 @@
         </div>
         </div>
         </div>
-        
+        <small id="uptodate">Course listing last updated 7/22 1:40 PM</small>
         
         <br>
         <div class="container-fluid" id="searchresults">

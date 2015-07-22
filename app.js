@@ -155,7 +155,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
                 if(overlappingDays[0] !== undefined) {
                     numOverlaps++;
                     //OverlapTester:
-                    alert("numOverlaps: " + numOverlaps);
+                    //alert("numOverlaps: " + numOverlaps);
                     alert("WARNING: " + courseobj.cnum + " and " + $scope.scheduledCourses[course].cnum + " overlap!");
                     //console.log($scope.scheduledCourses[course].cnum + " matches added; **** overlappingDays = " + overlappingDays + "     *****")
                 }
@@ -389,7 +389,8 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
                             'margin-left': margins[i]
                         });
                         if(numOverlaps>=3) {
-                            alert(margins)
+                            //alert(margins)
+                            //alert(j)
                             $(str).css({
                                 'width': eventSize/(numOverlaps-1) + 'px',
                                 'margin-left': margins[i] + -14
@@ -573,7 +574,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
 app.factory('courseListing', function($http) {
     return {
         getAllCourses: function() {
-            var url = "https://api.myjson.com/bins/2p58y";
+            var url = "https://api.myjson.com/bins/twq2";
             return $http.get(url);
         }
     };
