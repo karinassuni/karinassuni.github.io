@@ -51,9 +51,9 @@
 
 
                     <div id="coursedumpholder">
-                        <p class="help-block" id="pastedir" for="coursedump"><b>Scroll down and click on a course to add it.</b> Or, insert text containing CRNs here. You can even copy and paste the text from the Add/Drop Classes page of myRegistration!</p>
+                        <p class="help-block" id="pastedir" for="coursedump"><b>Scroll down and click on a course to add it.</b> Or, insert text containing CRNs here. You can even copy and paste the text from the Add/Drop Classes page of myRegistration! CRNs are automatically saved for the next time you visit.</p>
                         <textarea class="form-control" id="coursedump"></textarea>
-                        <button type="submit" ng-mouseup="parseDump()" style="margin-bottom:35px;">Add</button>
+                        <button type="submit" ng-mouseup="parseDump()" style="margin-bottom:35px;">Add all</button>
                         <!--<button type="submit" ng-mouseup="clear()">Clear calendar</button>-->
                         <button type="submit" ng-hide="localStorage.crns !== undefined" ng-mouseup="forget()">Forget CRNs</button>
                         <div id="clist">
