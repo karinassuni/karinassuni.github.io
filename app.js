@@ -13,6 +13,8 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         ssha: ["Anthropology","Art","Chicano Chicana Studies","Chinese","Cognitive Science","Core","Community Research and Service","Economics","English","French","Global Arts Studies Program","History","Interdisciplinary Humanities","Japanese","Management","Natural Sciences Education","Public Health"," Philosophy","Political Science","Psychology","Social Sciences","Sociology","Spanish","Undergraduate Studies","World Heritage","Writing"], //blue
     };
     
+    if(localStorage.crns === undefined)
+        localStorage.crns = ' '
     //localStorage.setItem("crns", '')
     $('#coursedump').val(localStorage.getItem("crns"));
     $scope.forget = function() {
