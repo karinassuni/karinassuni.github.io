@@ -14,11 +14,11 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
     };
     
     if(localStorage.crns === undefined)
-        localStorage.crns = ' '
+        localStorage.crns = ''
     //localStorage.setItem("crns", '')
-    $('#coursedump').val(localStorage.getItem("crns"));
+    $('#coursedump').val(localStorage.getItem("crns").trim());
     $scope.forget = function() {
-        localStorage.crns = "";
+        localStorage.crns = '';
         $("#coursedump").val('');
     }
     $scope.clear = function() {
@@ -68,7 +68,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
             //$scope.checkWarning();
             $scope.parsing = false;
             if($scope.scheduledCourses.length > 0)
-                $("#coursedump").val(localStorage.crns);
+                $("#coursedump").val(localStorage.crns.trim());
         }
     }
     
@@ -347,7 +347,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
             'color': 'white'
         });
         if(localStorage.crns.indexOf(courseobj.CRN) == -1) {
-            localStorage.crns+=" " + courseobj.CRN;
+            localStorage.crns = (localStorage.crns + " " + courseobj.CRN).trim();
             $('#coursedump').val(localStorage.getItem("crns"));
         }
         //alert(JSON.stringify($scope.overlaps))
