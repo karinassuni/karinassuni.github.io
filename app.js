@@ -588,7 +588,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
 app.factory('courseListing', function($http) {
     return {
         getAllCourses: function() {
-            var url = "https://api.myjson.com/bins/twq2";
+            var url = "http://api.myjson.com/bins/307ea";
             return $http.get(url);
         }
     };
