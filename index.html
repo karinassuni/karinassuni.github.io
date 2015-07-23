@@ -23,7 +23,6 @@
 
           ga('create', 'UA-65531453-1', 'auto');
           ga('send', 'pageview');
-
         </script>
         
         <script src="app.js"></script>
@@ -87,7 +86,6 @@
             <span class="input-group" id="seldep">
             <label for="seldep">Department:</label>
                 <select class="form-control" ng-init="filter['department'] = departments[0]" ng-model="filter['department']" ng-options="department as department for department in departments"></select>
-            
             </span>
         </div>
         <div class="form-group" id="searchopts">
@@ -140,6 +138,9 @@
                     <td class="tnum">{{course.seats_avail}}</td>
                 </tr>
             </table>
+        </div>
+        <div class="center" id="showbar" ng-show="!loading && !filter['litAll'] && filter['department'] == 'All' && !reachedEnd">
+            <div id="all" ng-click="filter['litAll'] = true"><text>Show all</text></div><div id="more" ng-click="allLimit= allLimit+30"><text>Show more</text></div>
         </div>
     </body>
 </html>

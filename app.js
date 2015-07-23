@@ -5,6 +5,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         $scope.courses = response.courses;
     }).finally(function() {
         $scope.loading = false;
+        $scope.allLimitMax = $scope.courses.length;
     })
     $scope.departments = ["All","Anthropology", "Art", "Bio Engin Small Scale Tech", "Biological Sciences", "Bioengineering", "Chicano Chicana Studies", "Chemistry", "Chinese", "Cognitive Science", "Core", "Community Research and Service", "Computer Science & Engineering", "Economics", "Elect. Engr. & Comp. Sci.", "English", "Engineering", "Environmental Engineering", "Environmental Systems (GR)", "Earth Systems Science", "French", "Global Arts Studies Program", "History", "Interdisciplinary Humanities", "Japanese", "Mathematics", "Mechanical Engineering", "Management", "Materials Science & Engr", "Natural Sciences Education", "Nat Sciences Undergrad Studies", "Public Health", "Philosophy", "Physics", "Political Science", "Psychology", "Quantitative & Systems Biology", "Social Sciences", "Sociology", "Spanish", "Undergraduate Studies", "World Heritage", "Writing"];
     $scope.colorScheme = {
@@ -499,6 +500,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
     
     ////////////////////Filters:
     $scope.allLimit = 30;
+    $scope.reachedEnd = false;
     $scope.filter = {
         litAll: false,
         closed: false,
@@ -527,6 +529,8 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
     }
     //pseudo-limitTo filter expression:
     $scope.limitAll = function(course, index) {
+        if(index == $scope.allLimitMax-1)
+            $scope.reachedEnd = true;
         if($scope.filter['department'] == "All" && index < $scope.allLimit && !$scope.filter['litAll'])
             return course;
         else if($scope.filter['department'] != "All")
