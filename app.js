@@ -54,11 +54,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
             if(m.index === re.lastIndex) {
                 re.lastIndex++;
             }
-            var coursedays = $scope.findCourse(m[1], $scope.courses);
-            for(var i=0; i<coursedays.length; i++) {
-                if(coursedays[i].actv != "EXAM")
-                    $scope.schedule(coursedays[i]);
-            }
+            $scope.schedule($scope.findCourse(m[1], $scope.courses)[0]);
         }
         //$scope.checkWarning();
         $scope.parsing = false;
