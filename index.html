@@ -91,7 +91,7 @@
             </span>
         </div>
         <div class="form-group" id="searchopts">
-            <label class="checkbox-inline"><input type="checkbox" ng-model="filter['litAll']"/>Show literally ALL classes/results</label>
+            <label class="checkbox-inline"><input type="checkbox" ng-model="filter['litAll']"/>Show entire catalog</label>
             <label class="checkbox-inline"><input type="checkbox" ng-model="filter['closed']"/>Show closed classes</label>
             <label class="checkbox-inline"><input type="checkbox" ng-model="filter['incTBD']"/>Show classes with time TBD</label>
         </div>
@@ -99,9 +99,10 @@
         </div>
         </div>
         </div>
-        <small id="uptodate">Course listing last updated 7/22 1:40 PM</small>
-        
-        <br>
+        <div class="center">
+            <p ng-if="loading" id="loading">Loading course list...</p>
+        </div>
+        <small id="uptodate">Course listing last updated 7/22 1:40 PM</small><br>
         <div class="container-fluid" id="searchresults">
             <table class="table table-striped table-hover" style="width:100%">
                 <tr style="background-color:#10458B; color:white">

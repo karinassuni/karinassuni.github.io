@@ -9,6 +9,17 @@
     width: 1305px !important;
 }
 
+#loading {
+    text-align: center;
+    background-color: white;
+}
+
+.center {
+    margin: auto;
+    width: 100%;
+    position: absolute;
+}
+
 #browse{
     margin-left:80px
 }
