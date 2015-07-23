@@ -338,8 +338,10 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
             'background-color' : '#A29061',
             'color': 'white'
         });
-        if(localStorage.crns.indexOf(courseobj.CRN) == -1)
+        if(localStorage.crns.indexOf(courseobj.CRN) == -1) {
             localStorage.crns+=" " + courseobj.CRN;
+            $('#coursedump').val(localStorage.getItem("crns"));
+        }
         //alert(JSON.stringify($scope.overlaps))
         //alert(localStorage.crns)
     }
