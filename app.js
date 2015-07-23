@@ -47,21 +47,29 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
     }
     
     $scope.parseDump = function() {
-        $scope.parsing = true;
-        var str = $("#coursedump").val();
-        var re = /(\d{5})/g;
-        var m;
+        $scope.$watch(function() { return $scope.loading; },
+        function() {
+            if(!$scope.loading)
+                parse();
+        });
         
-        while((m = re.exec(str)) !== null) {
-            if(m.index === re.lastIndex) {
-                re.lastIndex++;
+        function parse() {
+            $scope.parsing = true;
+            var str = $("#coursedump").val();
+            var re = /(\d{5})/g;
+            var m;
+            
+            while((m = re.exec(str)) !== null) {
+                if(m.index === re.lastIndex) {
+                    re.lastIndex++;
+                }
+                $scope.schedule($scope.findCourse(m[1], $scope.courses)[0]);
             }
-            $scope.schedule($scope.findCourse(m[1], $scope.courses)[0]);
+            //$scope.checkWarning();
+            $scope.parsing = false;
+            if($scope.scheduledCourses.length > 0)
+                $("#coursedump").val(localStorage.crns);
         }
-        //$scope.checkWarning();
-        $scope.parsing = false;
-        if($scope.scheduledCourses.length > 0)
-            $("#coursedump").val(localStorage.crns);
     }
     
     $scope.findCourse = function(CRN, arr) {
