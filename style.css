@@ -42,6 +42,9 @@
     padding-top: .5em;
     float:left;
 }
+#noresults {
+    padding-bottom: 25px;
+}
 
 .center {
     margin: auto;
