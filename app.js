@@ -369,6 +369,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
             }
         }
         localStorage.crns = localStorage.crns.replace(crn, '');
+        $('#coursedump').val(localStorage.getItem("crns").trim());
         
         //Readjust overlapping CSS
         var margins = [];
