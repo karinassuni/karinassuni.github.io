@@ -147,7 +147,7 @@
         <div class="center" id="showbar" ng-show="!loading && !filter['litAll'] && filter['department'] == 'All' && !reachedEnd && (courses | filter:course).length > 0">
             <div id="all" ng-click="filter['litAll'] = true"><text>Show all</text></div><div id="more" ng-click="allLimit= allLimit+30"><text>Show more</text></div>
         </div>
-        <div class="center" id="noresults">
+        <div class="center" id="noresults" ng-if="(courses | filter:course).length == 0">
             No courses found. Try checking typos or search options like Show closed classes!
         </div>
     </body>
