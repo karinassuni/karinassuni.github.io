@@ -1,31 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 
-import sys
-import json
-import cgi
-import cgitb
-cgitb.enable()
+import sys, json
 
-fs = cgi.FieldStorage()
+result = {'success':'true','message':'The Command Completed Successfully'};
 
-sys.stdout.write("Content-Type: application/json")
+myjson = json.load(sys.stdin)
+# Do something with 'myjson' object
 
-sys.stdout.write("\n")
-sys.stdout.write("\n")
-
-
-result = {}
-result['success'] = True
-result['message'] = "The command Completed Successfully"
-result['keys'] = ",".join(fs.keys())
-
-d = {}
-for k in fs.keys():
-    d[k] = fs.getvalue(k)
-
-result['data'] = d
-
-sys.stdout.write(json.dumps(result,indent=1))
-sys.stdout.write("\n")
-
-sys.stdout.close()
+print 'Content-Type: application/json\n\n'
+print json.dumps(result)    # or "json.dump(result, sys.stdout)"
