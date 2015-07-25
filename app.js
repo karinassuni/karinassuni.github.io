@@ -17,19 +17,14 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
     
     if(localStorage.crns === undefined)
         localStorage.crns = ''
-    //localStorage.setItem("crns", '')
     $('#coursedump').val(localStorage.getItem("crns").trim());
-    $scope.forget = function() {
-        localStorage.crns = '';
-        $("#coursedump").val('');
-    }
-    $scope.clear = function() {
-        $scope.scheduledCourses.forEach(function(course) {
-            $scope.unschedule(course.CRN);
-        });
 
-        //$scope.scheduledCourses = undefined;
-        //$scope.overlaps = undefined;
+    $scope.clear = function() {
+        while($scope.scheduledCourses.length > 0) {
+            $scope.scheduledCourses.forEach(function(course) {
+                $scope.unschedule(course.CRN);
+            });
+        }
     }
     
     $scope.scheduledCourses = [];
