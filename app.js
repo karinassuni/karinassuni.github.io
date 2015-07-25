@@ -57,8 +57,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
             for(crn in $scope.actions[$scope.actions.length-1]['sc']) {
                 $scope.unschedule($scope.actions[$scope.actions.length-1]['sc'][crn]);
             }
-            $scope.actions = [];
-            $scope.undoing = false;
+            $scope.actions.splice(-1,1);
         }
 
         else if($scope.actions[$scope.actions.length-1]['type'] == 'clear'){
@@ -135,7 +134,6 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
             var parsed = [];
 
             $scope.parsing = true;
-            alert("parsed prev: "+JSON.stringify($scope.parsedPrev))
 
             var str = $("#coursedump").val();
             var re = /(\d{5})/g;
@@ -149,12 +147,10 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
                 parsed.push(m[1]);
             }
             $scope.parsing = false;
-            alert("parsed before: "+JSON.stringify(parsed))
             for(i in parsed) {
                 if(parsed[i] == $scope.parsedPrev[i])
                     parsed.splice(i,1);
             }
-            alert("parsed after: "+JSON.stringify(parsed))
             $scope.actions.push({
                 type: 'Add all',
                 sc: parsed
