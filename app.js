@@ -7,17 +7,6 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         $scope.loading = false;
         $scope.allLimitMax = $scope.courses.length;
     })
-    /*$.ajax({
-        url: "http://54f03dfd.ngrok.io" + "/courses.JSON",
-        type: "get",
-        dataType: "json",
-        success: function(response) {
-            alert(response)
-            $scope.courses = response.courses;
-            $scope.loading = false;
-            $scope.allLimit = $scope.courses.length;
-        }
-    });*/
 
     $scope.departments = ["All","Anthropology", "Art", "Bio Engin Small Scale Tech", "Biological Sciences", "Bioengineering", "Chicano Chicana Studies", "Chemistry", "Chinese", "Cognitive Science", "Core", "Community Research and Service", "Computer Science & Engineering", "Economics", "Elect. Engr. & Comp. Sci.", "English", "Engineering", "Environmental Engineering", "Environmental Systems (GR)", "Earth Systems Science", "French", "Global Arts Studies Program", "History", "Interdisciplinary Humanities", "Japanese", "Mathematics", "Mechanical Engineering", "Management", "Materials Science & Engr", "Natural Sciences Education", "Nat Sciences Undergrad Studies", "Public Health", "Philosophy", "Physics", "Political Science", "Psychology", "Quantitative & Systems Biology", "Social Sciences", "Sociology", "Spanish", "Undergraduate Studies", "World Heritage", "Writing"];
     $scope.colorScheme = {
@@ -604,39 +593,6 @@ app.factory('courseListing', function($http) {
             var url = "http://ucm.karinaantonio.com" + "/courses.JSON";
             return $http.get(url);
         }
-        /*ehheheh     getAllCourses: function() {
-            $.ajax({
-                url: "http://ucm.karinaantonio.com/reqcourses.py",
-                success: function(response) {return response;}
-            });
-        } */
-        /*getAllCourses: function() {
-
-            URL = 'https://pbanssb.ucmerced.edu/pls/PROD/xhwschedule.P_ViewSchedule'
-            values = {}
-            values['validterm'] = 201530 //values[name] = value, e.g. <input name="validterm" value = "201530">
-            values['subjcode'] = 'ALL'
-            values['openclasses'] = 'N'
-
-            $.ajax({
-                url: URL,
-                data: values,
-                type: "POST",
-                dataType: "html",
-                success: function(dataBack) {
-                    alert("yeee!!!!")
-                    var result1 = dataBack.match(/.*<small>(.*)(?:<\/small>)?<\/t.>/gi).join(''); //returns an array which i concatenate
-                    var result2 = result1.match(/<TD CLASS="dddefault">&nbsp;<\/TD>)/gi).join('');
-                    var result3 = result2.match(/<a href="xhwschedule.*>(\d{5})<\/a>/gi).join('');
-                    alert("result3")
-                    console.log(result3);
-                    var result4 = result3.split('<H2>Class Schedule for Fall Semester 2015</H2>\nNOTE: Schedule Subject to Change')[1].split('<TABLE  CLASS="plaintable" SUMMARY="This is table displays line separator at end of the page."')[0];*/
-
-                    
-
-                //}
-            //})
-        //}
     };
 });
 
