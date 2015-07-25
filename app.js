@@ -135,6 +135,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
             var parsed = [];
 
             $scope.parsing = true;
+            alert("parsed prev: "+JSON.stringify($scope.parsedPrev))
 
             var str = $("#coursedump").val();
             var re = /(\d{5})/g;
@@ -148,12 +149,12 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
                 parsed.push(m[1]);
             }
             $scope.parsing = false;
-
+            alert("parsed before: "+JSON.stringify(parsed))
             for(i in parsed) {
                 if(parsed[i] == $scope.parsedPrev[i])
                     parsed.splice(i,1);
             }
-
+            alert("parsed after: "+JSON.stringify(parsed))
             $scope.actions.push({
                 type: 'Add all',
                 sc: parsed
