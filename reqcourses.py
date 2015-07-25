@@ -3,6 +3,8 @@
 import sys
 import json
 import cgi
+import cgitb
+cgitb.enable()
 
 fs = cgi.FieldStorage()
 
