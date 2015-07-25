@@ -95,8 +95,8 @@
 .removebtn.onschedbox {
     visibility: hidden;
 }
-.removebtn.onschedbox:hover {
-    visibility: visible !important;
+.event:hover .onschedbox {
+    visibility: visible; !important;
 }
 
 #uptodate {
@@ -113,9 +113,9 @@
     border: 2px solid black;
 }
 
-/*.list:hover{
-    border: 2px dashed #E6E6E6 !important;
-}*/
+.active{
+    border: 2px dashed white !important;
+}
 
 .list:hover .glyphicon-remove-circle{
     visibility: visible;

@@ -282,13 +282,13 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
             $scope.unschedule(crn);
             e.stopPropagation();
         });
-        
+        var $jQO;
         //Loop for every course day i
         while(i--) {
             var coursestr = '<div ' + 'data-crn="' + courseobj.CRN + '" ' + 'data-added="true" ' + 'class="event"><span data-crn="' + courseobj.CRN + '" class="glyphicon glyphicon-remove-circle removebtn onschedbox"></span>';
-            coursestr = (coursestr+'<b>'+courseobj.cnum+' '+courseobj.actv+'</b> <small>'+time+' <sup>['+courseobj.CRN+']</sup></small>'+'</div>').replace("event",daysstr.charAt(i).toLowerCase());
+            coursestr = (coursestr+'<b>'+courseobj.cnum+' '+courseobj.actv+'</b> <small>'+time+' <sup>['+courseobj.CRN+']</sup></small>'+'</div>').replace("event","event "+daysstr.charAt(i).toLowerCase());
             //console.log("Before CSS: " + coursestr)
-            var $jQO = $($.parseHTML(coursestr));
+            $jQO = $($.parseHTML(coursestr));
             $(coursetag).append($jQO);
             
             var durationCSS = timeCalc.main(courseobj, 1) + 'px';
@@ -311,6 +311,11 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         }
         
         $scope.scheduledCourses.push(courseobj);
+        $('div[data-crn="' + courseobj.CRN + '"]').hover(function() {
+            $('div[data-crn="' + courseobj.CRN + '"]').addClass('active');
+        },function(){
+            $('div[data-crn="' + courseobj.CRN + '"]').removeClass('active');
+        });
         
         //Check and modify around overlap
         if($scope.scheduledCourses[0] !== undefined) {
@@ -541,7 +546,8 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
             $jQO.css({
                 'background-color': color.getHex(),
                 'border-color': color.getHex(),
-                'text-shadow': '0px 0px 3px ' + color.getHex()
+                'text-shadow': '0px 0px 3px ' + color.getHex(),
+                'border': '2px solid ' + color.getHex()
             });
         }
         if($scope.colorScheme['natsci'].indexOf(courseobj.department) > -1) {
@@ -552,7 +558,8 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
             $jQO.css({
                 'background-color': color.getHex(),
                 'border-color': color.getHex(),
-                'text-shadow': '0px 0px 3px ' + color.getHex()
+                'text-shadow': '0px 0px 3px ' + color.getHex(),
+                'border': '2px solid ' + color.getHex()
             });
         }
         if($scope.colorScheme['ssha'].indexOf(courseobj.department) > -1) {
@@ -563,7 +570,8 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
             $jQO.css({
                 'background-color': color.getHex(),
                 'border-color': color.getHex(),
-                'text-shadow': '0px 0px 3px ' + color.getHex()
+                'text-shadow': '0px 0px 3px ' + color.getHex(),
+                'border': '2px solid ' + color.getHex()
             });
         }
     }
