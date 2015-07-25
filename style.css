@@ -90,6 +90,13 @@
 }
 .removebtn:hover {
     cursor: pointer;
+    visibility: visible !important;
+}
+.removebtn.onschedbox {
+    visibility: hidden;
+}
+.removebtn.onschedbox:hover {
+    visibility: visible !important;
 }
 
 #uptodate {

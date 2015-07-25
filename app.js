@@ -285,7 +285,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         
         //Loop for every course day i
         while(i--) {
-            var coursestr = '<div ' + 'data-crn="' + courseobj.CRN + '" ' + 'data-added="true" ' + 'class="event">';
+            var coursestr = '<div ' + 'data-crn="' + courseobj.CRN + '" ' + 'data-added="true" ' + 'class="event"><span data-crn="' + courseobj.CRN + '" class="glyphicon glyphicon-remove-circle removebtn onschedbox"></span>';
             coursestr = (coursestr+'<b>'+courseobj.cnum+' '+courseobj.actv+'</b> <small>'+time+' <sup>['+courseobj.CRN+']</sup></small>'+'</div>').replace("event",daysstr.charAt(i).toLowerCase());
             //console.log("Before CSS: " + coursestr)
             var $jQO = $($.parseHTML(coursestr));
