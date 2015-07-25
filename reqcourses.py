@@ -1,3 +1,4 @@
+return "hi"
 import requests
 
 URL = 'https://pbanssb.ucmerced.edu/pls/PROD/xhwschedule.P_ViewSchedule'
