@@ -20,6 +20,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
     $('#coursedump').val(localStorage.getItem("crns").trim());
 
     $scope.clearing = false;
+
     $scope.clear = function() {
         var beforestate = angular.copy($scope.scheduledCourses); //***
         $scope.actions.push({
@@ -110,7 +111,6 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
     $scope.overlaps = [];
     $scope.dupes = 0;
     $scope.parsing = false;
-    $scope.parsedPrev = [];
      
     $scope.dupeWorker = function(CRN) {
         for(var i=1; i<$scope.dupes; i++) {
@@ -131,7 +131,6 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         
         
         function parse() {
-            var parsed = [];
 
             $scope.parsing = true;
 
@@ -144,18 +143,13 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
                     re.lastIndex++;
                 }
                 $scope.schedule($scope.findCourse(m[1], $scope.courses)[0]);
-                parsed.push(m[1]);
             }
             $scope.parsing = false;
-            for(i in parsed) {
-                if(parsed[i] == $scope.parsedPrev[i])
-                    parsed.splice(i,1);
-            }
+
             $scope.actions.push({
-                type: 'Add all',
-                sc: parsed
+                type: ' ',
+                sc: {}
             });
-            $scope.parsedPrev = parsed;
 
             
             if($scope.scheduledCourses.length > 0)
