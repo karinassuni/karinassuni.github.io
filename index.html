@@ -70,6 +70,7 @@
                         <textarea class="form-control" id="coursedump"></textarea>
                         <button type="submit" ng-click="parseDump()" style="margin-bottom:35px;">Add all</button>
                         <button type="submit" ng-mouseup="clear()" ng-show="scheduledCourses.length > 0">Clear calendar</button>
+                        <button type="submit" ng-mouseup="undo()">Undo {{actions[actions.length-1]['type']}}</button>
                         <div id="clist">
                             
                         </div>
