@@ -5,6 +5,15 @@
     float: left;
 }
 
+#logo{
+    max-width: 1200px;
+    max-height: 196px;
+    position: relative;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
 #scheduler {
     width: 1305px !important;
 }
@@ -140,15 +149,16 @@
 
 .cal_header {
     float:left;
-    width: 148px;
+    width: 13%;
     text-align: center;
-    margin-right: 20px; /*VERY IMPORTANT FOR EVENT PUSHING */
+    margin-right: 4%; /*VERY IMPORTANT FOR EVENT PUSHING */
     font-weight: bold;
+    border: 1px solid black;
 }
 
 .cal_header#space{
-    width: 70px;
-    border: none;
+    width: calc(5% + 1em);
+    border: 1px solid black;
 }
 
 .time{
@@ -164,9 +174,8 @@
 /* the insertion in HTML div time slots determines the y, the time; css determines the x, the day */
 
 .m{
-    width: 148px;
-    height: 50px; /* <---- anomaly */
-    left: calc(80px);
+    width: 13.5%;
+    left: calc(5% + 5% + 0*(10% + 8%));
     float:left;
     border: 1px solid #000000;      
     position: absolute;
@@ -175,9 +184,8 @@
     margin-right: 20px;
 }
 .t{
-    width: 148px;
-    height: 50px; /* <---- anomaly */
-    left: calc(80px + 150px + 20px - 2px);
+    width: 13.5%;
+    left: calc(5% + 5% + 1*(10% + 8%));
     float:left;
     border: 1px solid #000000;      
     position: absolute;
@@ -186,9 +194,8 @@
     margin-right: 20px;
 }
 .w{
-    width: 148px;
-    height: 50px; /* <---- anomaly */
-    left: calc(80px + 150px + 20px + 150px + 20px - 4px);
+    width: 13.5%;
+    left: calc(5% + 5% + 2*(10% + 8%));
     float:left;
     border: 1px solid #000000;      
     position: absolute;
@@ -197,9 +204,8 @@
     margin-right: 20px;
 }
 .r{
-    width: 148px;
-    height: 50px; /* <---- anomaly */
-    left: calc(80px + 150px + 20px + 150px + 20px + 150px + 20px - 6px);
+    width: 13.5%;
+    left: calc(5% + 5% + 3*(10% + 8%));
     float:left;
     border: 1px solid #000000;
     position: absolute;
@@ -208,9 +214,8 @@
     margin-right: 20px;
 }
 .f{
-    width: 148px;
-    height: 50px; /* <---- anomaly */
-    left: calc(80px + 150px + 20px + 150px + 20px + 150px + 20px + 150px + 20px - 8px);
+    width: 13.5%;
+    left: calc(5% + 5% + 4*(10% + 8%));
     float:left;
     border: 1px solid #000000; 
     position: absolute;

@@ -14,6 +14,35 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         natsci: ["Biological Sciences","Chemistry","Environmental Systems (GR)","Earth Systems Science","Nat Sciences Undergrad Studies","Quantitative & Systems Biology", "Mathematics"], //yelow
         ssha: ["Anthropology","Art","Chicano Chicana Studies","Chinese","Cognitive Science","Core","Community Research and Service","Economics","English","French","Global Arts Studies Program","History","Interdisciplinary Humanities","Japanese","Management","Natural Sciences Education","Public Health"," Philosophy","Political Science","Psychology","Social Sciences","Sociology","Spanish","Undergraduate Studies","World Heritage","Writing"], //blue
     };
+
+    function adjustStyle(width) {
+      width = parseInt(width);
+      if (width < 701) {
+        $("#size-stylesheet").attr("href", "phone.css");
+        $('#mon').contents().last()[0].textContent='M';
+        $('#tues').contents().last()[0].textContent='T';
+        $('#wed').contents().last()[0].textContent='W';
+        $('#thur').contents().last()[0].textContent='R';
+        $('#fri').contents().last()[0].textContent='F';
+
+      } else {
+        $("#size-stylesheet2").attr("href", "style.css"); 
+        $('#mon').contents().last()[0].textContent='Monday';
+        $('#tues').contents().last()[0].textContent='Tuesday';
+        $('#wed').contents().last()[0].textContent='Wednesday';
+        $('#thur').contents().last()[0].textContent='Thursday';
+        $('#fri').contents().last()[0].textContent='Friday';
+      }
+    }
+
+    $(function() {
+      adjustStyle($(this).width());
+      $(window).resize(function() {
+        adjustStyle($(this).width());
+      });
+    });
+
+
     
     if(localStorage.crns === undefined)
         localStorage.crns = ''
@@ -217,7 +246,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
             });
         }
 
-        var eventSize = 150; //Size of event elements
+        var eventSize = 12.4; //Size of event elements
         if(courseobj.days == " " || courseobj.time.indexOf('TBD') != -1) {
             console.log("Error: Course days/times TBD");
             return;
@@ -228,7 +257,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         margins[0] = 10;
         var justAdded = [];
         var overlappingDays = [];
-        var overlapShiftCSS = 'calc(' + eventSize/numOverlaps + 'px' + ' ' + ')';
+        var overlapShiftCSS = 'calc(' + eventSize/numOverlaps + '%' + ' ' + ')';
         
         var title = "";
 
@@ -296,10 +325,8 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
             
             //Starting CSS for all courseobjs:
             $jQO.css({
-                'width': '150px',
                 'margin-top': startShiftCSS,
                 'height': durationCSS,
-                'margin-left': '10px',
                 'color': 'white',
                 'border-radius': '5px'
             });
@@ -338,24 +365,27 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
                         //i iterates through each individual day
                         //DAY SELECTOR TAKES CARE OF CASE WHEN ONLY A SUBSET OF DAYS OVERLAP BETWEEN DIFFERENT COURSES
                         //Modifying the MOST RECENT overlapping courseobj, THE LATEST ONE; the courseobj to be scheduled will go at the front margin 10px as always
-                        margins[i] = (eventSize/(numOverlaps))*(numOverlapsLive-1) + 10; //godly line
+                        margins[i] = (eventSize/(numOverlaps))*(numOverlapsLive-1) + '%'; //godly line
                         for(var j=0; j<overlappingDays.length; j++) {
                             var str = '.' + overlappingDays[j].toLowerCase() + '[data-crn="' + $scope.scheduledCourses[course].CRN + '"]';
                             console.log(str)
                             console.log("$str: " + $(str).prop('outerHTML'))
                             var attr = $(str).attr("data-added");
+                            //this if statement selects for overlapmember 1s
                             if(attr && typeof attr !== typeof undefined && attr !== false) {
                                 $(str).css({
-                                    'width': eventSize/(numOverlaps) + 'px',
-                                    'margin-left': '10px'
+                                    'width': eventSize/(numOverlaps) + '%',
+                                    'margin-left': 'calc(10px)'
                                 });
+                                $('div'+str).addClass('overlapmember1');
                             }
                             else {
                                 $(str).css({
-                                    'width': eventSize/(numOverlaps) + 'px',
-                                    'margin-left': margins[i]
+                                    'width': eventSize/(numOverlaps) + '%',
+                                    'margin-left': 'calc(' + margins[i] + ' + 10px)'
                                 });
                             }
+                            $('div'+str).addClass('overlapmember' + numOverlaps);
                             
                             //OverlapTester:
                             console.log("After CSS: " + $(str).prop('outerHTML'))
@@ -424,7 +454,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         var numOverlaps = 1;
         var numOverlapsLive = 1;
         margins[0] = 10;
-        var eventSize = 150;
+        var eventSize = 12.4;
         var overlappingDays = [];
         
         for(course in $scope.scheduledCourses) {
@@ -434,33 +464,53 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
             if(overlappingDays[0] !== undefined) 
                 numOverlaps++;
         }
+
+/*  margins[i] = (eventSize/(numOverlaps))*(numOverlapsLive-1) + '%'; //godly line
+    for(var j=0; j<overlappingDays.length; j++) {
+        var str = '.' + overlappingDays[j].toLowerCase() + '[data-crn="' + $scope.scheduledCourses[course].CRN + '"]';
+        console.log(str)
+        console.log("$str: " + $(str).prop('outerHTML'))
+        var attr = $(str).attr("data-added");
+        //this if statement selects for overlapmember 1s
+        if(attr && typeof attr !== typeof undefined && attr !== false) {
+            $(str).css({
+                'width': eventSize/(numOverlaps) + '%',
+                'margin-left': 'calc(10px)'
+            });
+            $('div'+str).addClass('overlapmember1');
+        }
+        else {
+            $('div'+str).addClass('overlapmember' + numOverlaps);
+            
+            $(str).css({
+                'width': eventSize/(numOverlaps) + '%',
+                'margin-left': 'calc(' + margins[i] + ' + 10px)'
+            });
+        }*/
+
+        var sharedDays = [];
         for(course in $scope.scheduledCourses) {
             //Return a list of all of the courses that overlap with the course trying to be scheduled
             if(overlappingDays[0] !== undefined) {
                 numOverlapsLive++;
+                var sharedDay = [];
                 for(var i=1; i<numOverlaps; i++) {
-                    margins[i] = (eventSize*(numOverlaps))/(numOverlapsLive+1) - 90; //godly line
+
                     for(var j=0; j<overlappingDays.length; j++) {
                         //i iterates through each individual day
                         //DAY SELECTOR TAKES CARE OF CASE WHEN ONLY A SUBSET OF DAYS OVERLAP BETWEEN DIFFERENT COURSES
                         var str = '.' + overlappingDays[j].toLowerCase() + '[data-crn="' + $scope.scheduledCourses[course].CRN + '"]';
-                        $(str).css({
-                            'width': eventSize*(numOverlaps/(numOverlapsLive)) + 'px',
-                            'margin-left': margins[i]
-                        });
-                        if(numOverlaps>=3) {
-                            //alert(margins)
-                            //alert(j)
-                            $(str).css({
-                                'width': eventSize/(numOverlaps-1) + 'px',
-                                'margin-left': margins[i] + -14
-                            });
-                        }
+                        if($(str).hasClass('overlapmember1'))
+                        sharedDay.push($(str));
                         
                     }
                 }
+
+                //possibly unecessary:
+                sharedDays.push(sharedDay);
             }
         }
+        alert(JSON.stringify(sharedDays));
         for(var i=0; i<$scope.overlaps.length; i++) {
             if($scope.overlaps[i]['obj'].CRN == crn){
                 $scope.overlaps.splice(i,1);
