@@ -239,14 +239,14 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         //when masterOverlap.length >= 1
         //almost a 2D array: iterate through every masterOverlap's days' own array groups (which will represent overlapping groups that're being added right now)
         for(var day=0; day<5; day++) {
-            for(var classGroup=0; classGroup<$scope.masterOverlap[day].length; /*iterate over array classGroupToday*/ classGroup++) {
+            for(var classGroup=0; classGroup<$scope.masterOverlap[day].length; /*iterate over array classGroup*/ classGroup++) {
                 for(var class_=0; class_<$scope.masterOverlap[day][classGroup].length; class_++) {
                     //^iterate over courseGroups that're usually of length==1 but possibly more if overlap found
                     //classGroup = 0 (the first class)
-                    //$scope.masterOverlap[day] == [[{class_ object}],[{}],...]
-                    //$scope.masterOverlap[day][classGroup] == [{class_ object}]
+                    //$scope.masterOverlap[day] == [[{class_ object}],[{}],...] == classesToday
+                    //$scope.masterOverlap[day][classGroup] == [{class_ object}] == classGroup
                     //$scope.masterOverlap[day][classGroup][class_] == {class_ object}
-                    //compare if courseobj overlaps with any member so that the courseobj can be added to the array encapsulating the class (the class_ which are usually of length==1) which are within the classGroupToday array which is within masterOverlap's array of days
+                    //compare if courseobj overlaps with any member so that the courseobj can be added to the array encapsulating the class (the class_ which are usually of length==1) which are within the classGroup array which is within masterOverlap's array of days
                     var otherClass = $scope.masterOverlap[day][classGroup][class_];
 
                     var daysSmaller;
@@ -402,10 +402,13 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         
         //Check and modify around overlap
         function adjustOverlapHTML(courseobj) {
-            //$scope.masterOverlap[day] == [[{class_ object}],[{}],...]
-            //$scope.masterOverlap[day][classGroup] == [{class_ object}]
+            //$scope.masterOverlap[day] == [[{class_ object}],[{}],...] == classesToday
+            //$scope.masterOverlap[day][classGroup] == [{class_ object}] == classGroup
             //$scope.masterOverlap[day][classGroup][class_] == {class_ object}
-            var eventSize = 12.4; //Size of event elements
+            var eventSize = 12.4; //Size of event elements, in %
+            //interate through classes per each day of the week
+            for(var day=0; day<5; day++) {
+                for(var classGroup=0; classGroup<$scope.masterOverlap[day].length; /*iterate over array classGroup*/ classGroup++) {
 
             margins[i] = (eventSize/(numOverlaps))*(numOverlapsLive-1) + '%'; //godly line
             for(var j=0; j<overlappingDays.length; j++) {
