@@ -15,6 +15,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         ssha: ["Anthropology","Art","Chicano Chicana Studies","Chinese","Cognitive Science","Core","Community Research and Service","Economics","English","French","Global Arts Studies Program","History","Interdisciplinary Humanities","Japanese","Management","Natural Sciences Education","Public Health"," Philosophy","Political Science","Psychology","Social Sciences","Sociology","Spanish","Undergraduate Studies","World Heritage","Writing"], //blue
     };
 
+    //Responsive CSS, according to screen size
     function adjustStyle(width) {
       width = parseInt(width);
       if (width < 701) {
@@ -34,22 +35,22 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         $('#fri').contents().last()[0].textContent='Friday';
       }
     }
-
     $(function() {
       adjustStyle($(this).width());
       $(window).resize(function() {
         adjustStyle($(this).width());
       });
     });
-
-
     
+    //Manage localStorage and textarea, so the former is never null so it can be concatenated to
     if(localStorage.crns === undefined)
         localStorage.crns = ''
     $('#coursedump').val(localStorage.getItem("crns").trim());
 
+    //for undoing
     $scope.clearing = false;
 
+    //clear entire schedule -- **add CSS red border over all courses**
     $scope.clear = function() {
         var beforestate = angular.copy($scope.scheduledCourses); //***
         $scope.actions.push({
@@ -66,6 +67,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         $scope.clearing = false;
     }
 
+    //undo action: clear, add, delete (and parse???)
     $scope.undoing = false;
     $scope.undo = function(opts) {
         if($scope.actions[$scope.actions.length-1]['type'] == 'add') {
@@ -110,9 +112,9 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         }
         if(count>1)
             $scope.actions.splice(i, 1);
-            
     }
 
+    //hover preview of what elements will be removed
     $scope.undoHover = function(opts) {
         if($scope.actions[$scope.actions.length-1]['type'] == 'add') {
             $scope.actions[$scope.actions.length-1]['sc'];
@@ -135,12 +137,14 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         }
     }
     
+    //core global variables
     $scope.actions = [];
     $scope.scheduledCourses = [];
     $scope.overlaps = [];
     $scope.dupes = 0;
     $scope.parsing = false;
      
+    //manage cases where one CRN has two different day/time slots, see schedule()
     $scope.dupeWorker = function(CRN) {
         for(var i=1; i<$scope.dupes; i++) {
             var course = $scope.findCourse(CRN, $scope.courses)[i]
@@ -150,6 +154,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         $scope.dupes = 0;
     }
     
+    //schedule all CRNS in textarea
     $scope.parseDump = function() {
         
             $scope.$watch(function() { return $scope.loading; },
@@ -186,6 +191,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         }
     }
     
+    //find course in, mostly, scheduledCourses
     $scope.findCourse = function(CRN, arr) {
         arrs = [];
         for(i in arr) {
@@ -195,7 +201,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         return arrs;
     };
     
-
+    //manage overlapping classes
     $scope.masterOverlap = [[],[],[],[],[]];
     // = [[[{}]],[[{}]],[[{}]],[[{}]],[[{}]]]; 
     // $scope.masterOverlap[0] == classesToday [{obj: courseobj, startTime: ts, endTime: te}]
@@ -322,8 +328,8 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         }
         //alert(JSON.stringify($scope.masterOverlap))
     }
-
     
+    //schedule course
     $scope.schedule = function(courseobj) {
 
         //make undoable by adding to actions list if appropriate
@@ -497,6 +503,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         }
     }
     
+    //unschedule course
     $scope.unschedule = function(crn) {
         if($scope.undoing == false && $scope.clearing == false) {
             $scope.$apply(function() {
@@ -533,19 +540,12 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         //$scope.verifyCorresp(courseobj);
     }            
     
+    //toggle for adding/removing courses from the table
     $scope.toggleSchedule = function(courseobj) {
         if($scope.findCourse(courseobj.CRN, $scope.scheduledCourses).length >= 1) {
             $scope.unschedule(courseobj.CRN)
         }
         else $scope.schedule(courseobj)
-    }
-
-    $scope.listColor = function(crn) {
-        if($scope.findCourse(crn, $scope.scheduledCourses).length >= 1)
-            return {
-            'background-color' : '#A29061',
-            'color': 'white'
-            };
     }
     
     ////////////////////Filters:
@@ -600,6 +600,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         else return;
     }
     
+    //determine and return unique visually accessible color of course
     $scope.cssColor = function(courseobj, $jQO) {
         if($scope.colorScheme['eng'].indexOf(courseobj.department) > -1) {
             var color = new KolorWheel([0, 67, 35]);
@@ -641,6 +642,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
 
 });
     
+//retrieve courseListing, all courses and their data
 app.factory('courseListing', function($http) {
     return {
         getAllCourses: function() {
@@ -650,6 +652,7 @@ app.factory('courseListing', function($http) {
     };
 });
 
+//calculate course time properties
 app.factory('timeCalc', function() {
 
     return {
@@ -702,6 +705,7 @@ app.factory('timeCalc', function() {
     };
 }); 
 
+//filter to correctly format times in table
 app.filter('timeCorrect', function() {
    return function(time) {
        return time.substring(0,time.length-1-1) + ' ' + time.substring(time.length-1-1,time.length-1) + '.m.';
