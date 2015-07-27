@@ -196,7 +196,8 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
     };
     
 
-    $scope.masterOverlap = [[],[],[],[],[]]; 
+    $scope.masterOverlap = [[],[],[],[],[]];
+    // = [[[{}]],[[{}]],[[{}]],[[{}]],[[{}]]]; 
     // $scope.masterOverlap[0] == classesToday [{obj: courseobj, startTime: ts, endTime: te}]
       //each obj corresponds to one day of the week 's class_
       //has to store every scheduled course JIC it gets an overlap
@@ -225,22 +226,25 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
 
                 //if a day of a course doesn't have the same start time, it has its own courseobj so don't worry about start and end Times
                 //NOTE: each classObj will have its own array just in case there'll be overlapping class_
-                $scope.masterOverlap[dayIndex].push([{
+                $scope.masterOverlap[dayIndex].splice(0, 0, [{ //*** splice = true JS insert
                     obj: courseobj,
                     startTime: ts,
                     endTime: te
                 }]);
             }
+            //alert(JSON.stringify($scope.masterOverlap))
             return;
+
             //you now have:
             //$scope.masterOverlap = [[[{obj: samecourseobj, startTime: ts, endTime: te}]], [], [[{obj: samecourseobj, startTime: ts, endTime: te}]], [], []]
         }
 
         //when masterOverlap.length >= 1
         //almost a 2D array: iterate through every masterOverlap's days' own array groups (which will represent overlapping groups that're being added right now)
-        for(var day=0; day<5; day++) {
+        for(var day=0; day<4; day++) {
             for(var classGroup=0; classGroup<$scope.masterOverlap[day].length; /*iterate over array classGroup*/ classGroup++) {
-                for(var class_=0; class_<$scope.masterOverlap[day][classGroup].length; class_++) {
+                var class_Init = angular.copy($scope.masterOverlap[day][classGroup].length); //prevent infinite loops from classGroup.length increasing by one due to splice, then counter following, then another insertion, then follow forever
+                for(var class_=0; class_<class_Init; class_++) {
                     //^iterate over courseGroups that're usually of length==1 but possibly more if overlap found
                     //classGroup = 0 (the first class)
                     //$scope.masterOverlap[day] == [[{class_ object}],[{}],...] == classesToday
@@ -277,43 +281,46 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
                         var dayIndex;
                         for(var i=0; i<courseobj.days.length; i++) {
                             switch(courseobj.days.charAt(i)) {
-                                case 'M': dayIndex = 0; break;
-                                case 'T': dayIndex = 1; break;
-                                case 'W': dayIndex = 2; break;
-                                case 'R': dayIndex = 3; break;
-                                case 'F': dayIndex = 4; break;
+                                case 'm': dayIndex = 0; break;
+                                case 't': dayIndex = 1; break;
+                                case 'w': dayIndex = 2; break;
+                                case 'r': dayIndex = 3; break;
+                                case 'f': dayIndex = 4; break;
                             }
                         }
                         if(dayIndex == day) { //insert if courseobj actually falls on this day
-                            $scope.masterOverlap[day].push({
+                            $scope.masterOverlap[day].splice(0, 0, [{
                                 obj: courseobj,
                                 startTime: ts,
                                 endTime: te
-                            });
+                            }]);
+                            continue;
                         }
                     }
 
                     var overlappingDayIndex;
                     for(var i=0; i<overlappingDays.length; i++) { //<= ensures a class_ always added
-                        switch(overlappingDays.charAt(i)) {
-                            case 'M': overlappingDayIndex = 0; break;
-                            case 'T': overlappingDayIndex = 1; break;
-                            case 'W': overlappingDayIndex = 2; break;
-                            case 'R': overlappingDayIndex = 3; break;
-                            case 'F': overlappingDayIndex = 4; break;
+                        switch(overlappingDays[i]) {
+                            case 'm': overlappingDayIndex = 0; break;
+                            case 't': overlappingDayIndex = 1; break;
+                            case 'w': overlappingDayIndex = 2; break;
+                            case 'r': overlappingDayIndex = 3; break;
+                            case 'f': overlappingDayIndex = 4; break;
                         }
 
                         //pushing class_ on appropriate day into appropriate classGroup array that it overlaps with 
                         alert("WARNING: " + courseobj.cnum + " and " + otherClass['obj'].cnum + " overlap!");
-                        $scope.masterOverlap[overlappingDayIndex][classGroup].push({
+                        $scope.masterOverlap[overlappingDayIndex][classGroup].splice(0, 0, {
                             obj: courseobj,
                             startTime: ts,
                             endTime: te
                         });
+                        //alert(JSON.stringify($scope.masterOverlap))
                     }
                 }
             }
         }
+        //alert(JSON.stringify($scope.masterOverlap))
     }
 
     
@@ -398,8 +405,8 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         }
         injectCalendarHTML(courseobj);
         
-        $scope.scheduledCourses.push(courseobj);
         $scope.scheduleMaster(courseobj);
+        $scope.scheduledCourses.push(courseobj);
         
         //Check for and modify around overlap
         function adjustOverlapCSS(courseobj) {
@@ -408,7 +415,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
             //$scope.masterOverlap[day][classGroup][class_] == {class_ object}
             var eventSize = 12.4; //Size of event elements, in %
             //interate through classes per each day of the week
-            for(var day=0; day<5; day++) {
+            for(var day=0; day<4; day++) {
                 for(var classGroup=0; classGroup<$scope.masterOverlap[day].length; /*iterate over array classGroup*/ classGroup++) {
                     var numOverlaps = $scope.masterOverlap[day][classGroup].length;
                     if(numOverlaps > 1) { // == if overlappingDays exist
@@ -417,16 +424,16 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
                             var otherClass = $scope.masterOverlap[day][classGroup][class_];
                             var dayClass;
 
-                            switch(dayClass = day) {
-                                case 0: overlappingDayIndex = '.m'; break;
-                                case 1: overlappingDayIndex = '.t'; break;
-                                case 2: overlappingDayIndex = '.w'; break;
-                                case 3: overlappingDayIndex = '.r'; break;
-                                case 4: overlappingDayIndex = '.f'; break;
+                            switch(day) {
+                                case 0: dayClass = '.m'; break;
+                                case 1: dayClass = '.t'; break;
+                                case 2: dayClass = '.w'; break;
+                                case 3: dayClass = '.r'; break;
+                                case 4: dayClass = '.f'; break;
                             }
 
-                            var classStr = dayClass + '[data-crn="' + $scope.scheduledCourses[course].CRN + '"]';
-                            var attr = $(str).attr("data-added");
+                            var classStr = dayClass + '[data-crn="' + otherClass['obj'].CRN + '"]';
+                            var attr = $(classStr).attr("data-added");
 
                             //if just added within $scope.schedule(), keep at front
                             if(attr && typeof attr !== typeof undefined && attr !== false) { //or just if(attr) ????????
@@ -434,12 +441,12 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
                                     'width': eventSize/(numOverlaps) + '%',
                                     'margin-left': 'calc(10px)'
                                 });
-                                $('div'+str).addClass('overlapmember1');
+                                $('div'+classStr).addClass('overlapmember1');
                             }
                             else {
                                 $(classStr).css({
                                     'width': eventSize/(numOverlaps) + '%',
-                                    'margin-left': 'calc(' + eventSize/(numOverlaps)/(class_) + '% + 10px)'
+                                    'margin-left': 'calc(' + eventSize/(numOverlaps)/(class_+1) + '% + 10px)'
                                     // class_ represents the index of the class within the classGroup
                                 });
                             }
