@@ -203,69 +203,92 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
     };
     
     //manage overlapping classes
-    $scope.masterOverlap = [[],[],[],[],[]];
-    // = [[[{}]],[[{}]],[[{}]],[[{}]],[[{}]]]; 
-    // $scope.masterOverlap[0] == classesToday [{obj: courseobj, startTime: ts, endTime: te}]
-      //each obj corresponds to one day of the week 's class_
-      //has to store every scheduled course JIC it gets an overlap
-
-    //COURSEOBJS/CRNS MUST BE SORTED BY STARTTIME IN ORDER TO WORK PROPERLY *******
-    $scope.scheduleMaster = function(courseobj) {
-
-        arr = timeCalc.main(courseobj, 2);
-        
-        //Convert to military time:
-        ts = arr[0]*100 + arr[1];
-        if(arr[2] == 'p' && arr[0] != 12) ts+= 1200;
-        te = arr[3]*100 + arr[4];
-        if(arr[5] == 'p' && arr[3] != 12) te+= 1200;
-
+        $scope.masterOverlap = [[],[],[],[],[]];
+        // = [[[{}]],[[{}]],[[{}]],[[{}]],[[{}]]]; 
+        // $scope.masterOverlap[0] == classesToday [{obj: courseobj, startTime: ts, endTime: te}]
+          //each obj corresponds to one day of the week 's class_
+          //has to store every scheduled course JIC it gets an overlap
         //Check for and modify around overlap
-        function adjustOverlapCSS(courseobj) {
-            //$scope.masterOverlap[day] == [[{class_ object}],[{}],...] == classesToday
-            //$scope.masterOverlap[day][classGroup] == [{class_ object}] == classGroup
-            //$scope.masterOverlap[day][classGroup][class_] == {class_ object}
-            var eventSize = 12.4; //Size of event elements, in %
-            //interate through classes per each day of the week
-            for(var day=0; day<5; day++) {
-                for(var classGroup=0; classGroup<$scope.masterOverlap[day].length; /*iterate over array classGroup*/ classGroup++) {
-                    var numOverlaps = $scope.masterOverlap[day][classGroup].length;
-                    if(numOverlaps > 1) { // == if overlappingDays.length > 1
-                        for(var class_=0; class_<$scope.masterOverlap[day][classGroup].length; class_++) {
+    function adjustOverlapCSS() {
+        //$scope.masterOverlap[day] == [[{class_ object}],[{}],...] == classesToday
+        //$scope.masterOverlap[day][classGroup] == [{class_ object}] == classGroup
+        //$scope.masterOverlap[day][classGroup][class_] == {class_ object}
+        var eventSize = 12.4; //Size of event elements, in %
+        //interate through classes per each day of the week
+        for(var day=0; day<5; day++) {
+            for(var classGroup=0; classGroup<$scope.masterOverlap[day].length; /*iterate over array classGroup*/ classGroup++) {
+                var numOverlaps = $scope.masterOverlap[day][classGroup].length;
 
-                            var otherClass = $scope.masterOverlap[day][classGroup][class_];
+                for(var class_=0; class_<$scope.masterOverlap[day][classGroup].length; class_++) {
 
-                            //prevent class from matching overllap with itself
-                            if(otherClass['obj'] == courseobj)
-                                numOverlaps--;
+                    var Class = $scope.masterOverlap[day][classGroup][class_];
 
-                            var dayClass;
+                    //prevent class from matching overllap with itself
 
-                            switch(day) {
-                                case 0: dayClass = '.m'; break;
-                                case 1: dayClass = '.t'; break;
-                                case 2: dayClass = '.w'; break;
-                                case 3: dayClass = '.r'; break;
-                                case 4: dayClass = '.f'; break;
-                            }
+                    var dayClass;
 
-                            var classStr = dayClass + '[data-crn="' + otherClass['obj'].CRN + '"]';
-
-                            $(classStr).css({
-                                'width': eventSize/(numOverlaps+1) + '%',
-                                'margin-left': 'calc(' + eventSize/(numOverlaps+1)*(class_) + '% + 10px)'
-                                // class_ represents the index of the class within the classGroup
-                            });
-                            
-                        }   
+                    switch(day) {
+                        case 0: dayClass = '.m'; break;
+                        case 1: dayClass = '.t'; break;
+                        case 2: dayClass = '.w'; break;
+                        case 3: dayClass = '.r'; break;
+                        case 4: dayClass = '.f'; break;
                     }
-                }
+
+                    var classStr = dayClass + '[data-crn="' + Class.CRN + '"]';
+
+                    $(classStr).css({
+                        'width': eventSize/(numOverlaps) + '%',
+                        'margin-left': 'calc(' + eventSize/(numOverlaps)*(class_) + '% + 10px)'
+                        // class_ represents the index of the class within the classGroup
+                    });
+                    
+                }   
+                
             }
         }
+    }
 
-        function switchCaseNoOverlap(courseobj, classGroup, overlap) {
-            var return_ = false;
-            for(var day=0; day<courseobj.days.length; day++) {
+    $scope.scheduleMaster = function(courseobj) {
+
+
+        function convertTimes(courseobj) {
+            arr = timeCalc.main(courseobj, 2);
+            
+            //Convert to military time:
+            ts = arr[0]*100 + arr[1];
+            if(arr[2] == 'p' && arr[0] != 12) ts+= 1200;
+            te = arr[3]*100 + arr[4];
+            if(arr[5] == 'p' && arr[3] != 12) te+= 1200;
+
+            return [ts, te];
+        }
+
+        //if there are no classGroups on any of the days that courseobj is scheduled for, make one of your own classGroups; masterOverlap will contain nothing otherwise
+        for(var day=0; day<courseobj.days.length; day++) {
+            var dayIndex;
+            switch(courseobj.days.charAt(day)) {
+                case 'M': dayIndex = 0; break;
+                case 'T': dayIndex = 1; break;
+                case 'W': dayIndex = 2; break;
+                case 'R': dayIndex = 3; break;
+                case 'F': dayIndex = 4; break;
+            }
+            if($scope.masterOverlap[dayIndex].length == 0)
+                $scope.masterOverlap[dayIndex].splice(0, 0, [courseobj]);
+        }
+
+        //if a course otherCourse in scheduledCourses also falls on the same day, and their times overlap:
+            //1) create a new classGroup for BOTH courseobj and otherCourse and put the classGroup inside the appropriate day in masterOverlap OR 2) if otherCourse is already inside of a classGroup, add courseobj into THAT classGroup rather than create a new one
+            // AND 3) if courseobj overlaps with more than one otherCourse, do either of the above FOR EACH other overlapping course
+
+        //check every scheduledCourse for overlap
+        var otherCourses = $scope.scheduledCourses;
+        
+        //finding other overlappingCourses:
+        for(var day=0; day<courseobj.days.length; day++) {
+            var overlappingCourses = []; //== overlappingCourses TODAY ***
+            for(var course=0; course<otherCourses.length; course++) {
                 var dayIndex;
                 switch(courseobj.days.charAt(day)) {
                     case 'M': dayIndex = 0; break;
@@ -274,300 +297,228 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
                     case 'R': dayIndex = 3; break;
                     case 'F': dayIndex = 4; break;
                 }
-                alert("dayIndex: "+dayIndex)
 
-                if($scope.masterOverlap[dayIndex].length == 0) {
-                    //console.log("$scope.masterOverlap[dayIndex].indexOf([{obj: courseobj, startTime: ts, endTime: te}]) == " + $scope.masterOverlap[dayIndex].indexOf([{obj: courseobj, startTime: ts, endTime: te}]))
-                        $scope.masterOverlap[dayIndex].splice(0, 0, [{
-                            obj: courseobj,
-                            startTime: ts,
-                            endTime: te
-                        }]);
-                    return_ = true;
-                }
-                else {
-                    //make sure that this doesn't run when classGroup isn't a parameter i.e. during the search for cases where there are no classGroups in masterOverlap[day] 
-                    if(typeof classGroup === 'undefined') {
-                        //console.log("classGroup === undefined at " + courseobj.cnum + ' - ' + dayIndex + ",going to return")
-                        return;
+                //FOR EACH DAY THAT COURSEOBJ FALLS ON, check if otherCourse also falls on that same day
+                //iterate through each day that otherCourse falls on
+                for(var otherDay=0; otherDay<otherCourses[course].days.length; otherDay++) {
+
+                    //prevent class from matching overlap with itself
+                    if(otherCourses[course] == courseobj)
+                        break;
+
+                    var otherDayIndex;
+                    switch(otherCourses[course].days.charAt(otherDay)) {
+                        case 'M': otherDayIndex = 0; break;
+                        case 'T': otherDayIndex = 1; break;
+                        case 'W': otherDayIndex = 2; break;
+                        case 'R': otherDayIndex = 3; break;
+                        case 'F': otherDayIndex = 4; break;
                     }
 
-                    //alert("***a classGroup exists on this dayIndex so i'm gonna do stuff***")
-                    //console.log("$scope.masterOverlap[dayIndex][classGroup].indexOf({obj: courseobj, startTime: ts, endTime: te}) == " + $scope.masterOverlap[dayIndex][classGroup].indexOf({obj: courseobj, startTime: ts, endTime: te}))
+                    //if courseobj and otherCourse fall on the same $day (dayIndex == otherDayIndex)
+                    if(dayIndex == otherDayIndex) {
+                        //check if their TIMES overlap
+                        var t1s = convertTimes(courseobj)[0];
+                        var t1e = convertTimes(courseobj)[1];
+                        var t2s = convertTimes(otherCourses[course])[0];
+                        var t2e = convertTimes(otherCourses[course])[1];
 
-                    //if today's courseobj overlaps with otherClass, put courseobj into otherClass' classGroup
-                    //alert("***/// BEFORE INSERT ON DAY " + dayIndex + ": "+JSON.stringify($scope.masterOverlap[dayIndex]))
-
-                    //COURSEOBJS/CRNS NEED TO BE SORTED BY STARTTIME IN ORDER FOR THIS TO WORK ****
-                    if(overlap)
-                        $scope.masterOverlap[dayIndex][classGroup].splice(0, 0, {
-                            obj: courseobj,
-                            startTime: ts,
-                            endTime: te
-                        });
-                    //otherwise, put it into its own classGroup
-                    else
-                        $scope.masterOverlap[dayIndex].splice(0, 0, [{
-                            obj: courseobj,
-                            startTime: ts,
-                            endTime: te
-                        }]);
-                    //alert("***/// INSERTED ON DAY " + dayIndex + ": " +JSON.stringify($scope.masterOverlap[dayIndex]))
-                }
-            }
-            if(return_) {console.log("returning"); return return_;}
-        }
-
-        //when masterOverlap.length >= 1
-        //almost a 2D array: iterate through every masterOverlap's days' own array groups (which will represent overlapping groups that're being added right now)
-
-        function overlapCheck(courseobj, otherClass) {
-            var daysSmaller;
-            var daysBigger;
-            if(courseobj.days.length > otherClass['obj'].days.length) {
-                daysSmaller = otherClass['obj'].days;
-                daysBigger = courseobj.days;
-            }
-            else {
-                daysSmaller = courseobj.days;
-                daysBigger = otherClass['obj'].days;
-            }
-
-            overlappingDays = []; //days at which courseobj and class_ overlap; initialized just outside fn
-
-            var t2s = otherClass['startTime']
-            var t2e = otherClass['endTime']
-
-            for(var i=0; i<daysSmaller.length; i++) {
-                if(daysBigger.indexOf(daysSmaller.charAt(i)) > -1) {
-                    if(ts <= t2e && t2s <= te) 
-                        overlappingDays.push(daysSmaller.charAt(i).toLowerCase());
-                }
-            }
-
-            return overlappingDays;
-        }
-
-        //stop duplicates; COURSEOBJ alreadyInserted so don't try to insert it again within my complex loop
-        var alreadyInserted = false;
-
-        //inserting classes into the appropriate classGroups
-        function loops() {
-            for(var day=0; day<5; day++) {
-                //run the switch case and to immediately return with cases where there are no classGroups in masterOverlap[day]
-                if(switchCaseNoOverlap(courseobj))
-                    return;
-                for(var classGroup=0; classGroup<$scope.masterOverlap[day].length; /*iterate over array classGroup*/ classGroup++) {
-                    var class_Init = angular.copy($scope.masterOverlap[day][classGroup].length); //prevent infinite loops from classGroup.length increasing by one due to splice, then counter following, then another insertion, then follow forever
-                    for(var class_=0; class_<class_Init; class_++) {
-                        //^iterate over courseGroups that're usually of length==1 but possibly more if overlap found
-                        //classGroup = 0 (the first class)
-                        //$scope.masterOverlap[day] == [[{class_ object}],[{}],...] == classesToday
-                        //$scope.masterOverlap[day][classGroup] == [{class_ object}] == classGroup
-                        //$scope.masterOverlap[day][classGroup][class_] == {class_ object}
-                        //compare if courseobj overlaps with any member so that the courseobj can be added to the array encapsulating the class (the class_ which are usually of length==1) which are within the classGroup array which is within masterOverlap's array of days
-
-                        var otherClass = $scope.masterOverlap[day][classGroup][class_];
-                        if(!otherClass) //=== undefined
-                            continue;
-
-                        console.log("dealing with " + courseobj.cnum + " on " + day)
-
-                        var overlappingDays = overlapCheck(courseobj, otherClass);
-
-                        //deal with a class which has one day in overlappingDays, another day not
-                        //run on non-overlappingDays class
-                        if(alreadyInserted) continue;
-
-                        //if(!alreadyInserted)
-                        //alert(JSON.stringify($scope.masterOverlap[day]))
-                        if(overlappingDays.length > 0) {
-                            switchCaseNoOverlap(courseobj, classGroup, true);
-                            //applying this more than necessary leads to visual issues
-                             adjustOverlapCSS(courseobj);
+                        //if courseobj and otherCourse OVERLAP on their times TODAY
+                        if(t1s <= t2e && t2s <= t1e) {
+                            //otherCourse overlaps with courseobj; using the loop, overlappingCourses ends up holding all of the otherCourses that overlap with courseobj, so that...
+                            overlappingCourses.push(otherCourses[course]);
+                            break;
                         }
-                        else
-                            switchCaseNoOverlap(courseobj, classGroup);
-                        alreadyInserted = true;
-
-                        alert("WARNING: " + courseobj.cnum + " and " + otherClass['obj'].cnum + " overlap!");
-                        //alert(overlappingDays)
-                        console.log("end of one class_ loop " + class_)
                     }
-                console.log("end of classGroup loop " + classGroup)   
                 }
-            //console.log("end of day " + day)
+            }
+            //...so that we can synthesize a new classGroup combining them ALL
+            if(overlappingCourses.length > 0) {
+                overlappingCourses.push(courseobj);
+                alert(JSON.stringify(overlappingCourses))
+                $scope.masterOverlap[dayIndex].splice(0, overlappingCourses.length, overlappingCourses);
+                adjustOverlapCSS();
             }
         }
-        loops();
-
-        //console.log("END OF scheduleMaster METHOD!!!!!")
+    }
+    $scope.unscheduleMaster = function(courseobj) {
+        //just need to find all instances of courseobj and remove them
+        for(var day=0; day<5; day++) {
+            for(var classGroup=0; classGroup<$scope.masterOverlap[day].length; classGroup ++) {
+                //if found courseobj in a classGroup... remove it.
+                var courseobjIndex = $scope.masterOverlap[day][classGroup].indexOf(courseobj);
+                if(courseobjIndex > -1) {
+                    $scope.masterOverlap[day][classGroup].splice(courseobjIndex, 1);
+                    adjustOverlapCSS();
+                }
+            } 
+        }
     }
     
     //schedule course
     $scope.schedule = function(courseobj) {
 
-        //make undoable by adding to actions list if appropriate
-        if($scope.undoing == false && $scope.parsing == false) {
-            $scope.actions.push({
-                type: 'add',
-                sc: courseobj
-            });
-        }
+        ///////Undo, error-management///////
+            //make undoable by adding to actions list if appropriate
+            if($scope.undoing == false && $scope.parsing == false) {
+                $scope.actions.push({
+                    type: 'add',
+                    sc: courseobj
+                });
+            }
 
-        //prevent adding courses with null time info
-        if(courseobj.days == " " || courseobj.time.indexOf('TBD') != -1) {
-            console.log("Error: Course days/times TBD");
-            return;
-        }
-        
-        //don't schedule duplicates
-        if($scope.scheduledCourses) { //!== undefined
-            for(var i=0; i<$scope.findCourse(courseobj.CRN, $scope.scheduledCourses).length; i++) {
-                if($scope.findCourse(courseobj.CRN, $scope.scheduledCourses)[i] == courseobj) {
-                    return;
+            //prevent adding courses with null time info
+            if(courseobj.days == " " || courseobj.time.indexOf('TBD') != -1) {
+                console.log("Error: Course days/times TBD");
+                return;
+            }
+            
+            //don't schedule duplicates
+            if($scope.scheduledCourses) { //!== undefined
+                for(var i=0; i<$scope.findCourse(courseobj.CRN, $scope.scheduledCourses).length; i++) {
+                    if($scope.findCourse(courseobj.CRN, $scope.scheduledCourses)[i] == courseobj) {
+                        return;
+                    }
                 }
             }
-        }
 
-        //Inject HTML
-        var title = "";
-        var time = "";
-        var daysstr = courseobj.days;
-        var coursetag = timeCalc.main(courseobj, 0);
+        ///////Inject HTML///////
+            var title = "";
+            var time = "";
+            var daysstr = courseobj.days;
+            var coursetag = timeCalc.main(courseobj, 0);
 
-        var justAdded = [];
-        function modifyTitleTime(courseobj) {
-            if(courseobj.ctitle.indexOf('-') != -1) {
-                title = courseobj.ctitle.substring(0,courseobj.ctitle.indexOf('-'));
-                cinfo = courseobj.ctitle.substring(courseobj.ctitle.indexOf('-')+2);
-                master = true;
+            var justAdded = [];
+            function modifyTitleTime(courseobj) {
+                if(courseobj.ctitle.indexOf('-') != -1) {
+                    title = courseobj.ctitle.substring(0,courseobj.ctitle.indexOf('-'));
+                    cinfo = courseobj.ctitle.substring(courseobj.ctitle.indexOf('-')+2);
+                    master = true;
+                }
+                else title = courseobj.ctitle;
+
+                var ctime = courseobj.time;
+                time = ctime.substring(0,ctime.length-1-1) + ' ' + ctime.substring(ctime.length-1-1,ctime.length-1) + '.m.';
             }
-            else title = courseobj.ctitle;
-
-            var ctime = courseobj.time;
-            time = ctime.substring(0,ctime.length-1-1) + ' ' + ctime.substring(ctime.length-1-1,ctime.length-1) + '.m.';
-        }
-        modifyTitleTime(courseobj);
-        function injectListHTML(courseobj) {
-            var liststr = '<div data-crn="' + courseobj.CRN + '" class="list"><span data-crn="' + courseobj.CRN + '" class="glyphicon glyphicon-remove-circle removebtn"></span><b>' + title + ': <br>' + courseobj.cnum + ' ' + courseobj.actv + ' </b>- ' + courseobj.CRN + '<br><small>' + time + ', ' + courseobj.days + '</small></div>';
-            var $jQOL = $($.parseHTML(liststr));
-            $("#clist").append($jQOL);
-            $scope.cssColor(courseobj, $jQOL);
-        }
-        injectListHTML(courseobj);
-        function injectCalendarHTML(courseobj) {
-            var $jQO;
-            var i = daysstr.length;
-            //Loop for every course day i
-            while(i--) {
-                var coursestr = '<div ' + 'data-crn="' + courseobj.CRN + '" ' + 'data-added="true" ' + 'class="event"><span data-crn="' + courseobj.CRN + '" class="glyphicon glyphicon-remove-circle removebtn onschedbox"></span>';
-                coursestr = (coursestr+'<b>'+courseobj.cnum+' '+courseobj.actv+'</b> <small>'+time+' <sup>['+courseobj.CRN+']</sup></small>'+'</div>').replace("event","event "+daysstr.charAt(i).toLowerCase());
-                //console.log("Before CSS: " + coursestr)
-                $jQO = $($.parseHTML(coursestr));
-                $(coursetag).append($jQO);
-                
-                var durationCSS = timeCalc.main(courseobj, 1) + 'px';
-                var startShiftCSS = 'calc( -20px ' + '- 60px + ' + timeCalc.main(courseobj, 2)[1] + 'px' + ')';
-                
-                //Starting CSS for all courseobjs:
-                $jQO.css({
-                    'margin-top': startShiftCSS,
-                    'height': durationCSS,
-                    'color': 'white',
-                    'border-radius': '5px'
-                });
-                $scope.cssColor(courseobj, $jQO);
-
-                justAdded.push($jQO);
-                //OverlapTester:
-                console.log("**ADDED.CSS: " + $jQO.prop('outerHTML'))
+            modifyTitleTime(courseobj);
+            function injectListHTML(courseobj) {
+                var liststr = '<div data-crn="' + courseobj.CRN + '" class="list"><span data-crn="' + courseobj.CRN + '" class="glyphicon glyphicon-remove-circle removebtn"></span><b>' + title + ': <br>' + courseobj.cnum + ' ' + courseobj.actv + ' </b>- ' + courseobj.CRN + '<br><small>' + time + ', ' + courseobj.days + '</small></div>';
+                var $jQOL = $($.parseHTML(liststr));
+                $("#clist").append($jQOL);
+                $scope.cssColor(courseobj, $jQOL);
             }
-        }
-        injectCalendarHTML(courseobj);
+            injectListHTML(courseobj);
+            function injectCalendarHTML(courseobj) {
+                var $jQO;
+                var i = daysstr.length;
+                //Loop for every course day i
+                while(i--) {
+                    var coursestr = '<div ' + 'data-crn="' + courseobj.CRN + '" ' + 'data-added="true" ' + 'class="event"><span data-crn="' + courseobj.CRN + '" class="glyphicon glyphicon-remove-circle removebtn onschedbox"></span>';
+                    coursestr = (coursestr+'<b>'+courseobj.cnum+' '+courseobj.actv+'</b> <small>'+time+' <sup>['+courseobj.CRN+']</sup></small>'+'</div>').replace("event","event "+daysstr.charAt(i).toLowerCase());
+                    //console.log("Before CSS: " + coursestr)
+                    $jQO = $($.parseHTML(coursestr));
+                    $(coursetag).append($jQO);
+                    
+                    var durationCSS = timeCalc.main(courseobj, 1) + 'px';
+                    var startShiftCSS = 'calc( -20px ' + '- 60px + ' + timeCalc.main(courseobj, 2)[1] + 'px' + ')';
+                    
+                    //Starting CSS for all courseobjs:
+                    $jQO.css({
+                        'margin-top': startShiftCSS,
+                        'height': durationCSS,
+                        'color': 'white',
+                        'border-radius': '5px'
+                    });
+                    $scope.cssColor(courseobj, $jQO);
+
+                    justAdded.push($jQO);
+                    //OverlapTester:
+                    console.log("**ADDED.CSS: " + $jQO.prop('outerHTML'))
+                }
+            }
+            injectCalendarHTML(courseobj);
         
+
+        $scope.scheduledCourses.push(courseobj);
         //console.log("running scheduleMaster()")
-        var courseobjHasOverlap = false;
         $scope.scheduleMaster(courseobj);
         //console.log("FINISHED running scheduleMaster()")
-        $scope.scheduledCourses.push(courseobj);
-        
-
         console.log(JSON.stringify($scope.masterOverlap));
 
-        //courseobj hover - need here?
-        $('div[data-crn="' + courseobj.CRN + '"]').hover(function() {
-            $('div[data-crn="' + courseobj.CRN + '"]').addClass('active');
-        },function(){
-            $('div[data-crn="' + courseobj.CRN + '"]').removeClass('active');
-        });
-        //Click remove button--UNSCHEDULE - need here?
-        $('.removebtn').click(function(e) {
-            var crn = $(this).data("crn");
-            //$(this).remove(); //remove the remove button itself
-            $scope.unschedule(crn);
-            e.stopPropagation();
-        });
 
-        //keep count of what course was just added, so it won't be shifted for CSS overlap
-        $.each(justAdded, function(index, value){
-            $(this).removeAttr("data-added");
-        })
+        ///////JQUERY, CSS, LOCAL STORAGE///////
+            //courseobj hover - need here.
+            $('div[data-crn="' + courseobj.CRN + '"]').hover(function() {
+                $('div[data-crn="' + courseobj.CRN + '"]').addClass('active');
+            },function(){
+                $('div[data-crn="' + courseobj.CRN + '"]').removeClass('active');
+            });
+            //Click remove button--UNSCHEDULE - need here.
+            $('.removebtn').click(function(e) {
+                var crn = $(this).data("crn");
+                //$(this).remove(); //remove the remove button itself
+                $scope.unschedule(crn);
+                e.stopPropagation();
+            });
 
-        //work with same CRN on different day at different time
-        if($scope.dupes == 0 && $scope.findCourse(courseobj.CRN, $scope.courses).length > 1) {
-            $scope.dupes = $scope.findCourse(courseobj.CRN, $scope.courses).length;
-            $scope.dupeWorker(courseobj.CRN);
-        }
+            //work with same CRN on different day at different time
+            if($scope.dupes == 0 && $scope.findCourse(courseobj.CRN, $scope.courses).length > 1) {
+                $scope.dupes = $scope.findCourse(courseobj.CRN, $scope.courses).length;
+                $scope.dupeWorker(courseobj.CRN);
+            }
 
-        //update table CRN css
-        $('.courserow[data-crn="' + courseobj.CRN + '"]').css({
-            'background-color' : '#A29061',
-            'color': 'white'
-        });
+            //update table CRN css
+            $('.courserow[data-crn="' + courseobj.CRN + '"]').css({
+                'background-color' : '#A29061',
+                'color': 'white'
+            });
 
-        //update localStorage and textarea
-        if(localStorage.crns.indexOf(courseobj.CRN) == -1) {
-            localStorage.crns = (localStorage.crns + " " + courseobj.CRN).trim();
-            if(localStorage.crns.indexOf('  ') > -1)
-                localStorage.crns.replace('  ', ' ');
-            $('#coursedump').val(localStorage.getItem("crns"));
-        }
+            //update localStorage and textarea
+            if(localStorage.crns.indexOf(courseobj.CRN) == -1) {
+                localStorage.crns = (localStorage.crns + " " + courseobj.CRN).trim();
+                if(localStorage.crns.indexOf('  ') > -1)
+                    localStorage.crns.replace('  ', ' ');
+                $('#coursedump').val(localStorage.getItem("crns"));
+            }
     }
     
     //unschedule course
     $scope.unschedule = function(crn) {
-        if($scope.undoing == false && $scope.clearing == false) {
-            $scope.$apply(function() {
-                $scope.actions.push({
-                    type: 'remove',
-                    sc: $scope.findCourse(crn, $scope.courses)[0]
-                });
-            });
-        }
 
-        var courseobj = {};
-        $('div[data-crn="' + crn + '"]').remove();
-        $('.courserow[data-crn="' + crn + '"]').css({
-            'background-color' : '',
-            'color': ''
-        });
-        for(var i=0; i<$scope.scheduledCourses.length; i++) {
-            if($scope.scheduledCourses[i].CRN == crn){
-                courseobj = $scope.scheduledCourses[i];
-                $scope.scheduledCourses.splice(i,1);
+        //Undo support
+            if($scope.undoing == false && $scope.clearing == false) {
+                $scope.$apply(function() {
+                    $scope.actions.push({
+                        type: 'remove',
+                        sc: $scope.findCourse(crn, $scope.courses)[0]
+                    });
+                });
             }
-        }
-        localStorage.crns = localStorage.crns.replace(crn, '');
-        var str = localStorage.crns;
-        var re = /(\s{2,})/g;
-        var result = str.replace(re, ' ');
-        localStorage.crns = result;
-        $('#coursedump').val(localStorage.getItem("crns").trim());
-        
-        //Readjust overlapping CSS
-        var eventSize = 12.4;
-        // ............................... <implement here>
+
+        //Remove HTML and CSS
+            $('div[data-crn="' + crn + '"]').remove();
+            $('.courserow[data-crn="' + crn + '"]').css({
+                'background-color' : '',
+                'color': ''
+            });
+
+        //Remove from models
+            var courseobj = {};
+            for(var i=0; i<$scope.scheduledCourses.length; i++) {
+                if($scope.scheduledCourses[i].CRN == crn){
+                    courseobj = $scope.scheduledCourses[i];
+                    $scope.scheduledCourses.splice(i,1);
+                }
+            }
+            localStorage.crns = localStorage.crns.replace(crn, '');
+            $scope.unscheduleMaster(courseobj);
+
+        //Trim textarea
+            var str = localStorage.crns;
+            var re = /(\s{2,})/g;
+            var result = str.replace(re, ' ');
+            localStorage.crns = result;
+            $('#coursedump').val(localStorage.getItem("crns").trim());
 
         //$scope.verifyCorresp(courseobj);
     }            
@@ -581,18 +532,19 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
     }
     
     ////////////////////   Filters:   ////////////////////
-    $scope.allLimit = 30;
-    $scope.reachedEnd = false;
-    $scope.filter = {
-        litAll: false,
-        closed: false,
-        department: "All",
-        incTBD: false
-    }
+    //Global filter variables
+        $scope.allLimit = 30;
+        $scope.reachedEnd = false;
+        $scope.filter = {
+            litAll: false,
+            closed: false,
+            department: "All",
+            incTBD: false
+        }
     
     //Comparator:
     $scope.filterByDepartment = function(ac, ex) { //passed "expected" value from filter expression (in this case {department: filter['department']}),  actual value from the object in the array
-    //in this case ac = filter['department'], a string
+        //in this case ac = filter['department'], a string
         if(ac === undefined || ex === undefined) {
             //console.log("undefined")
             return false;
