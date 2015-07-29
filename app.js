@@ -16,26 +16,48 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         ssha: ["Anthropology","Art","Chicano Chicana Studies","Chinese","Cognitive Science","Core","Community Research and Service","Economics","English","French","Global Arts Studies Program","History","Interdisciplinary Humanities","Japanese","Management","Natural Sciences Education","Public Health"," Philosophy","Political Science","Psychology","Social Sciences","Sociology","Spanish","Undergraduate Studies","World Heritage","Writing"], //blue
     };
 
+    var lessinfo = false;
+    $('#moreinfobutton').click(function() {
+            $('#moreinfo').toggle();
+            lessinfo = !lessinfo;
+            if(lessinfo)
+                $('#moreinfobutton').contents().last()[0].textContent='Less info'
+            else
+                $('#moreinfobutton').contents().last()[0].textContent='More info'
+        });
+
     //Responsive CSS, according to screen size
     function adjustStyle(width) {
-      width = parseInt(width);
-      if (width < 701) {
-        $("#size-stylesheet").attr("href", "phone.css");
-        $('#mon').contents().last()[0].textContent='M';
-        $('#tues').contents().last()[0].textContent='T';
-        $('#wed').contents().last()[0].textContent='W';
-        $('#thur').contents().last()[0].textContent='R';
-        $('#fri').contents().last()[0].textContent='F';
-
-      } else {
-        $("#size-stylesheet2").attr("href", "style.css"); 
-        $('#mon').contents().last()[0].textContent='Monday';
-        $('#tues').contents().last()[0].textContent='Tuesday';
-        $('#wed').contents().last()[0].textContent='Wednesday';
-        $('#thur').contents().last()[0].textContent='Thursday';
-        $('#fri').contents().last()[0].textContent='Friday';
-      }
+        width = parseInt(width);
+        if(width < 1365 && width > 900) {
+            $('#mon').contents().last()[0].textContent='M';
+            $('#tues').contents().last()[0].textContent='T';
+            $('#wed').contents().last()[0].textContent='W';
+            $('#thur').contents().last()[0].textContent='R';
+            $('#fri').contents().last()[0].textContent='F';
+            $('#moreinfo').toggle(false); //hide #moreinfo
+            $('#moreinfobutton').toggle(true); //show #moreinfobutton
+            lessinfo = false; //reset more/less info state
+            $('#moreinfobutton').contents().last()[0].textContent='More info' //reset more/less info state
+            $('#coursedumpholder').removeClass('container');
+        }
+        else if(width < 900) {
+            $("#phone-stylesheet").attr("href", "phone.css");
+            $('#coursedumpholder').addClass('container');
+        }   
+        else {
+            $('#mon').contents().last()[0].textContent='Monday';
+            $('#tues').contents().last()[0].textContent='Tuesday';
+            $('#wed').contents().last()[0].textContent='Wednesday';
+            $('#thur').contents().last()[0].textContent='Thursday';
+            $('#fri').contents().last()[0].textContent='Friday';
+            $('#moreinfo').toggle(true); //show #moreinfo
+            $('#moreinfobutton').toggle(false) //hide #moreinfobutton
+            $('#coursedumpholder').removeClass('container');
+            $("#wide-stylesheet").attr("href", "wide.css"); 
+        }
     }
+
     $(function() {
       adjustStyle($(this).width());
       $(window).resize(function() {
@@ -208,7 +230,8 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         // $scope.masterOverlap[0] == classesToday [{obj: courseobj, startTime: ts, endTime: te}]
           //each obj corresponds to one day of the week 's class_
           //has to store every scheduled course JIC it gets an overlap
-        //Check for and modify around overlap
+    
+    //Check for and modify around overlap
     function adjustOverlapCSS() {
         //$scope.masterOverlap[day] == [[{class_ object}],[{}],...] == classesToday
         //$scope.masterOverlap[day][classGroup] == [{class_ object}] == classGroup
@@ -249,6 +272,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         }
     }
 
+    //manage the overlappingCourses data model
     $scope.scheduleMaster = function(courseobj) {
 
 
@@ -327,6 +351,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
                         if(t1s <= t2e && t2s <= t1e) {
                             //otherCourse overlaps with courseobj; using the loop, overlappingCourses ends up holding all of the otherCourses that overlap with courseobj, so that...
                             overlappingCourses.push(otherCourses[course]);
+                            alert("WARNING: " + courseobj.cnum + " and " + otherCourses[course].cnum + " overlap!")
                             break;
                         }
                     }
@@ -335,7 +360,6 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
             //...so that we can synthesize a new classGroup combining them ALL
             if(overlappingCourses.length > 0) {
                 overlappingCourses.push(courseobj);
-                alert(JSON.stringify(overlappingCourses))
                 $scope.masterOverlap[dayIndex].splice(0, overlappingCourses.length, overlappingCourses);
                 adjustOverlapCSS();
             }
@@ -369,7 +393,7 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
 
             //prevent adding courses with null time info
             if(courseobj.days == " " || courseobj.time.indexOf('TBD') != -1) {
-                console.log("Error: Course days/times TBD");
+                alert("Error: Course days/times TBD");
                 return;
             }
             

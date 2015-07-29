@@ -5,6 +5,16 @@
     float: left;
 }
 
+#coursedumpholder {
+    float: left;
+    width: 100%;
+    padding-top:30px;
+}
+
+@media (max-width: 985px) {
+    #table.stacktable {width: 100%;}
+}
+
 #scheduler {
     width: 100%;
 }
@@ -28,14 +38,28 @@
     font-weight: 500;
 }
 
+#moreinfobutton {
+    color: #A6A6A6;
+    font-weight: lighter;
+    font-size: 10px;
+    background-color: aliceblue;
+    padding: 2px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+#coursedumpholder .button {
+    width:100%;
+    height: 50px;
+}
+
 #all{
     background-color: #10458B;
     border-right: 1px solid white;
     height: 39px;
     cursor: pointer;
-    padding-left:calc(8%);
-    padding-right:calc(8%);
-    margin-left: 9%;
+    padding-left: 5%;
+    padding-right: 5%;
     padding-top: .5em;
     float:left;
     text-align: center;
@@ -45,11 +69,8 @@
     border-left-style: none;
     height: 39px;
     cursor: pointer;
-    padding-left: calc(30%);
-    padding-right: calc(30%);
     text-align: center;
     padding-top: .5em;
-    float:left;
 }
 #noresults {
     padding-bottom: 25px;
@@ -63,35 +84,41 @@
 }
 
 #browse{
-    margin-left:80px
+
 }
 
 #seldep {
-    margin-left:10px;
+    margin-top: 20px;
+    width: 100%;
+}
+
+#departmentname {
+
 }
 
 #searchgroup{
     margin-top:6px;
+    width: 100%;
+    text-align: center;
+}
+
+#search {
+    width: 100%;
 }
 
 #searchopts {
     margin-bottom: 15px;
 }
 
-#coursedumpholder {
-    float: left;
-    width: 325px;
-    padding-top:30px;
-    margin-left:13px;
-}
-
 #clist {
-    height: calc(1040px - 220px);
     overflow-y: auto;
+    margin-top: 35px;
+    margin-bottom: 35px;
 }
 
 #pastedir {
     margin-top:1px;
+    text-align: center;
 }
 
 .removebtn {
@@ -120,6 +147,11 @@
     padding: 3px 3px 3px 3px;
     margin-bottom: 5px;
     border: 2px solid black;
+    width: 31%;
+    display: block;
+    float: left;
+    margin: 1%;
+    /*its width is bound to #coursedumpholder's width*/
 }
 
 .active{
@@ -151,9 +183,8 @@
     float:left;
     width: 12%;
     text-align: center;
-    margin-right: 4%; /*VERY IMPORTANT FOR EVENT PUSHING */
+    margin-right: 4%;
     font-weight: bold;
-    border: 1px solid black;
 }
 
 .time{
@@ -165,11 +196,7 @@
     float: left;
 }
 
-
-
-/* ^ space between times = 50px; box including space and 1px border = 52px */
 /* the insertion in HTML div time slots determines the y, the time; css determines the x, the day */
-/* for the following, heights set in html: */
 .m{
     left: calc(16% - 5pt);
 }
