@@ -44,6 +44,14 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         else if(width < 900) {
             $("#phone-stylesheet").attr("href", "phone.css");
             $('#coursedumpholder').addClass('container');
+            $('#mon').contents().last()[0].textContent='M';
+            $('#tues').contents().last()[0].textContent='T';
+            $('#wed').contents().last()[0].textContent='W';
+            $('#thur').contents().last()[0].textContent='R';
+            $('#fri').contents().last()[0].textContent='F';
+            $('#moreinfo').toggle(false); //hide #moreinfo
+            $('#moreinfobutton').toggle(true); //show #moreinfobutton
+            lessinfo = false; //reset more/less info state
         }   
         else {
             $('#mon').contents().last()[0].textContent='Monday';
