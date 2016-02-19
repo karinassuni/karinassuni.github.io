@@ -31,7 +31,7 @@
 }
 
 
-#logo{
+#logo {
     max-width: 1200px;
     max-height: 196px;
     width: 100%;
@@ -49,7 +49,7 @@
     background-color: white;
 }
 
-#showbar{
+#showbar {
     height: 40px;
     color: white;
     font-weight: 500;
@@ -69,7 +69,20 @@
     width:100%;
 }
 
-#all{
+#coursedumpholder .unre {
+    width:50%;
+    float: left;
+}
+
+#coursedumpholder .unre#redo {
+    float: right;
+}
+
+#coursedumpholder .unre#redo .redoblank {
+    display: none;
+}
+
+#all {
     background-color: #10458B;
     border-right: 1px solid white;
     height: 39px;
@@ -80,7 +93,7 @@
     float:left;
     text-align: center;
 }
-#more{
+#more {
     background-color: #10458B;
     border-left-style: none;
     height: 39px;
@@ -90,10 +103,6 @@
 }
 #noresults {
     padding-bottom: 25px;
-}
-
-#browse{
-
 }
 
 #seldep {
@@ -140,7 +149,7 @@
     visibility: hidden;
 }
 .event:hover .onschedbox {
-    visibility: visible; !important;
+    visibility: visible !important;
 }
 
 #uptodate {
@@ -191,7 +200,7 @@
     font-weight: bold;
 }
 
-.time{
+.time {
     clear:both;
     width: calc(100% - 20px);
     height: 59px;
@@ -201,23 +210,23 @@
 }
 
 /* the insertion in HTML div time slots determines the y, the time; css determines the x, the day */
-.m{
+.m {
     left: calc(16% - 5pt);
 }
-.t{
+.t {
     left: calc((16% - 1.3pt)*2);
 }
-.w{
+.w {
     left: calc((16% - 0pt)*3);
 }
-.r{
+.r {
     left: calc((16% + 0.6pt)*4);
 }
-.f{
+.f {
     left: calc((16% + 0.9pt)*5);
 }
 
-.event{
+.event {
     width: 12.4%;
     margin-left: 10px;
     float:left;
@@ -225,10 +234,14 @@
     margin-right: 20px;
     overflow: auto;
 }
-.event:hover{
+.event:hover {
     width: 12.4% !important;
     height: 150% !important;
     background-color: #A6A6A6 !important;
     color: black !important;
     z-index: 1000 !important;
+}
+
+.results_cell {
+    text-align: center;
 }
