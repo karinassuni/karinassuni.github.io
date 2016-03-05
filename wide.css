@@ -183,15 +183,6 @@
     width: 400px;
 }
 
-.tnum {
-    width: 50px;
-    text-align: center;
-}
-
-.tcenter {
-    text-align: center;
-}
-
 .cal_header {
     float:left;
     width: 12%;
@@ -200,7 +191,7 @@
     font-weight: bold;
 }
 
-.time {
+.cal_time {
     clear:both;
     width: calc(100% - 20px);
     height: 59px;
@@ -242,6 +233,133 @@
     z-index: 1000 !important;
 }
 
-.results_cell {
+#results_header_row {
     text-align: center;
+    background-color:#10458B;
+    color:white;
+}
+
+.results_row {
+    text-align: center;
+}
+
+.results_cell {
+    text-align: inherit;
+}
+
+.department {
+
+}
+
+.crn {
+
+}
+
+.cnum {
+
+}
+
+.ctitle {
+    text-align: left;
+}
+
+.units {
+
+}
+
+.actv {
+
+}
+
+.days {
+
+}
+
+.time {
+    text-align: left;
+}
+
+.loc {
+
+}
+
+.term {
+
+}
+
+.instructor {
+
+}
+
+.max_enrl {
+
+}
+
+.act_enrl {
+
+}
+
+.seats_avail {
+
+}
+
+#results_header_department {
+    width: 230px;
+}
+
+#results_header_crn {
+
+}
+
+#results_header_cnum {
+    width: 190px;
+}
+
+#results_header_ctitle {
+    width: 400px;    
+}
+
+#results_header_units {
+    width: 30px;
+}
+
+#results_header_actv {
+
+}
+
+#results_header_days {
+    width: 65px
+}
+
+#results_header_time {
+    width: 125px
+}
+
+#results_header_loc {
+    width: 110px
+}
+
+#results_header_term {
+    width: 130px
+}
+
+#results_header_instructor {
+    width: 220px
+}
+
+.results_header_seats {
+    width: 50px;
+    text-align: center;
+}
+
+#results_header_max_enrl {
+
+}
+
+#results_header_act_enrl {
+
+}
+
+#results_header_seats_avail {
+
 }

@@ -15,16 +15,16 @@
         <meta property="og:image" type="image/png" content="http://ucm.karinaantonio.com/fbpreview-new.png"/>
         <meta property="og:image:width" content="1920"/>
         <meta property="og:image:height" content="912"/>
-        
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
         <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
         <script src="http://linkbroker.hu/stuff/kolorwheel.js/KolorWheel.min.js"></script>
         <link type="text/css" media="screen" rel="stylesheet" href="responsive-tables.css" />
         <script type="text/javascript" src="responsive-tables.js"></script>
-        
+
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
-        
+
         <!--<script>
           (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
           (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -34,8 +34,8 @@
           ga('create', 'UA-65531453-1', 'auto');
           ga('send', 'pageview');
         </script>-->
-        
-        <script src="app_v2.js"></script>
+
+        <script src="./bundle.js"></script>
     </head>
     <body ng-app="courser" ng-controller='courseListCtrl'>
         <div>
@@ -52,23 +52,23 @@
                         <span class="cal_header" id="thur">Thursday</span>
                         <span class="cal_header" id="fri">Friday</span>
                         <div id="time_holder">
-                            <div class="time" id="7a">7 am</div>
-                            <div class="time" id="8a">8 am</div>  
-                            <div class="time" id="9a">9 am</div>
-                            <div class="time" id="10a">10 am</div>
-                            <div class="time" id="11a">11 am</div>
-                            <div class="time" id="12p">12 pm</div>
-                            <div class="time" id="1p">1 pm</div>
-                            <div class="time" id="2p">2 pm</div>
-                            <div class="time" id="3p">3 pm</div>
-                            <div class="time" id="4p">4 pm</div>
-                            <div class="time" id="5p">5 pm</div>
-                            <div class="time" id="6p">6 pm</div>
-                            <div class="time" id="7p">7 pm</div>
-                            <div class="time" id="8p">8 pm</div>
-                            <div class="time" id="9p">9 pm</div>
-                            <div class="time" id="10p">10 pm</div>
-                            <div class="time" id="11p">11 pm</div>
+                            <div class="cal_time" id="7a">7 am</div>
+                            <div class="cal_time" id="8a">8 am</div>
+                            <div class="cal_time" id="9a">9 am</div>
+                            <div class="cal_time" id="10a">10 am</div>
+                            <div class="cal_time" id="11a">11 am</div>
+                            <div class="cal_time" id="12p">12 pm</div>
+                            <div class="cal_time" id="1p">1 pm</div>
+                            <div class="cal_time" id="2p">2 pm</div>
+                            <div class="cal_time" id="3p">3 pm</div>
+                            <div class="cal_time" id="4p">4 pm</div>
+                            <div class="cal_time" id="5p">5 pm</div>
+                            <div class="cal_time" id="6p">6 pm</div>
+                            <div class="cal_time" id="7p">7 pm</div>
+                            <div class="cal_time" id="8p">8 pm</div>
+                            <div class="cal_time" id="9p">9 pm</div>
+                            <div class="cal_time" id="10p">10 pm</div>
+                            <div class="cal_time" id="11p">11 pm</div>
                         </div>
                     </div>
 
@@ -81,13 +81,13 @@
                         <button type="submit" ng-mouseup="undo()" ng-show="actions.length > 0" class="button unre" id="undo">Undo {{actions[actions.length-1]['type']}}</button>
                         <button type="submit" ng-mouseup="redo()" ng-show="actions.length > 0 || redos.length > 0" class="button unre" id="redo">Redo <span class="redoblank">{{actions[actions.length-1]['type']}}</span>{{redos[redos.length-1]['type']}}</button>
                         <div id="clist">
-                            
+
                         </div>
                     </div>
 
             </div>
         </div>
-        
+
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
@@ -120,22 +120,21 @@
         <small id="uptodate">Course listing last updated 7/29 11:40 AM</small><br>
         <div class="container-fluid" id="searchresults">
             <table class="table responsive table-striped table-hover" id="results_table" style="width:100%">
-                <tr style="background-color:#10458B; color:white">
-                    <th style="text-align: center; width: 230px">Department</th>
-                    <th style="text-align: center">CRN</th>
-                    <th style="text-align: center; width: 190px">Course Number</th>
-                    <th style="text-align: center; width:400px">Title</th>
-                    <th style="text-align: center; width:30px">Units</th>
-                    <th style="text-align: center">Activity</th>
-                    <th style="text-align: center; width:65px">Days</th>
-                    <th style="text-align: center; width:125px">Time</th>
-                    <th style="text-align: center; width:110px">Location</th>
-                    <th style="text-align: center; width:130px">Term</th>
-                    <th style="text-align: center; width: 220px">Instructor</th>
-                    <th style="border-right-style: none">Seats: </th>
-                    <th style="border-left-style: none; border-right-style: none" class="tnum">Max</th>
-                    <th style="border-left-style: none; border-right-style: none" class="tnum">Taken</th>
-                    <th style="border-left-style: none" class="enrl">Open</th>
+                <tr id="results_header_row">
+                    <th id="results_header_department" class="results_cell">Department</th>
+                    <th id="results_header_crn" class="results_cell">CRN</th>
+                    <th id="results_header_cnum" class="results_cell">Course Number</th>
+                    <th id="results_header_ctitle" class="results_cell">Title</th>
+                    <th id="results_header_units" class="results_cell">Units</th>
+                    <th id="results_header_actv" class="results_cell">Activity</th>
+                    <th id="results_header_days" class="results_cell">Days</th>
+                    <th id="results_header_time" class="results_cell">Time</th>
+                    <th id="results_header_loc" class="results_cell">Location</th>
+                    <th id="results_header_term" class="results_cell">Term</th>
+                    <th id="results_header_instructor" class="results_cell">Instructor</th>
+                    <th id="results_header_max_enrl" class="results_cell results_header_seats">Max</th>
+                    <th id="results_header_act_enrl" class="results_cell results_header_seats">Taken</th>
+                    <th id="results_header_seats_avail" class="results_cell results_header_seats">Open</th>
                 </tr>
             </table>
         </div>
