@@ -27,12 +27,13 @@ window.onload = function() {
     let searchBox = document.getElementById("search_box");
 
     searchBox.oninput = function() {
-        return this.value && courseSearch(this.value, courses);
+        if (this.value)
+            courseSearch(this.value, courses);
     };
 
     // Prevent form submission with <Enter>:
     searchBox.onkeydown = function(e) {
-        if(e.keyCode == 13)
+        if (e.keyCode === 13)
             e.preventDefault();
     };
 
