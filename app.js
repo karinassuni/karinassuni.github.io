@@ -658,7 +658,7 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
                 'border': '2px solid ' + color.getHex()
             });
         }
-        if($scope.colorScheme['natsci'].indexOf(courseobj.department) > -1) {
+        else if($scope.colorScheme['natsci'].indexOf(courseobj.department) > -1) {
             var color = new KolorWheel([45, 67, 35]);
             color.l+= ($scope.colorScheme['natsci'].indexOf(courseobj.department)*2.7);
             color.s+= ($scope.colorScheme['natsci'].indexOf(courseobj.department)*3)
@@ -670,11 +670,23 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
                 'border': '2px solid ' + color.getHex()
             });
         }
-        if($scope.colorScheme['ssha'].indexOf(courseobj.department) > -1) {
+        else if($scope.colorScheme['ssha'].indexOf(courseobj.department) > -1) {
             var color = new KolorWheel([220, 67, 35]);
             color.l+= ($scope.colorScheme['ssha'].indexOf(courseobj.department)*2.7);
             color.s+= ($scope.colorScheme['ssha'].indexOf(courseobj.department)*3)
             color.h+= ($scope.colorScheme['ssha'].indexOf(courseobj.department)*1.2)
+            $jQO.css({
+                'background-color': color.getHex(),
+                'border-color': color.getHex(),
+                'text-shadow': '0px 0px 3px ' + color.getHex(),
+                'border': '2px solid ' + color.getHex()
+            });
+        }
+        else {
+            var color = new KolorWheel([120, 67, 35]);
+            color.l+= (2.7);
+            color.s+= (3)
+            color.h+= (1.2)
             $jQO.css({
                 'background-color': color.getHex(),
                 'border-color': color.getHex(),
