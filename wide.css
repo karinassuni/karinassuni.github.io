@@ -132,14 +132,14 @@
 .removebtn {
     float: right;
 }
-.removebtn:hover {
+.removebtn:focus {
     cursor: pointer;
     visibility: visible !important;
 }
 .removebtn.onschedbox {
     visibility: hidden;
 }
-.event:hover .onschedbox {
+.event:focus .onschedbox {
     visibility: visible; !important;
 }
 
@@ -162,7 +162,7 @@
     border: 2px dashed white !important;
 }
 
-.list:hover .glyphicon-remove-circle{
+.list:focus .glyphicon-remove-circle{
     visibility: visible;
 }
 
@@ -225,7 +225,7 @@
     margin-right: 20px;
     overflow: auto;
 }
-.event:hover{
+.event:focus{
     width: 12.4% !important;
     height: 150% !important;
     background-color: #A6A6A6 !important;
