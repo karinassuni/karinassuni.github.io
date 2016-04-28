@@ -1,14 +1,42 @@
-var app = angular.module('courser', []);
-app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
-    $scope.loading = true;
-    courseListing.getAllCourses().success(function(response) {
-        $scope.courses = response.courses;
-    }).finally(function() {
-        $scope.loading = false;
-        $scope.allLimitMax = $scope.courses.length;
-    })
+var url = "https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses/execute?token=p5gMp7SDRx9JN9BefY6kwfZrm";
+var courses = [];
+var departments = ["All"];
 
-    $scope.departments = ["All","Anthropology", "Art", "Bio Engin Small Scale Tech", "Biological Sciences", "Bioengineering", "Chicano Chicana Studies", "Chemistry", "Chinese", "Cognitive Science", "Core", "Community Research and Service", "Computer Science & Engineering", "Economics", "Elect. Engr. & Comp. Sci.", "English", "Engineering", "Environmental Engineering", "Environmental Systems (GR)", "Earth Systems Science", "French", "Global Arts Studies Program", "History", "Interdisciplinary Humanities", "Japanese", "Mathematics", "Mechanical Engineering", "Management", "Materials Science & Engr", "Natural Sciences Education", "Nat Sciences Undergrad Studies", "Public Health", "Philosophy", "Physics", "Political Science", "Psychology", "Quantitative & Systems Biology", "Social Sciences", "Sociology", "Spanish", "Undergraduate Studies", "World Heritage", "Writing"];
+$.ajax({
+    method: "POST",
+    url: url,
+    datatype: "json",
+    async: false,
+    success: function checkResult(response) {
+        if (response.status === "RUNNING") {
+            $.ajax({
+                method: "GET",
+                url: response.detailsUrl,
+                datatype: "json",
+                async: false,
+                success: function(newResponse) {
+                    checkResult(newResponse);
+                }
+            });
+        }
+        else if (response.status === "SUCCEEDED") {
+            $.ajax(response.resultsUrl, {async: false}).done(function(results) {
+                courses = results[0].pageFunctionResult.courses;
+                departments = departments.concat(results[0].pageFunctionResult.departments);
+            });
+        }
+    }
+});
+
+
+var app = angular.module('courser', []);
+app.controller('courseListCtrl', function($scope, timeCalc) {
+
+    $scope.loading = false;
+    $scope.courses = courses;
+    $scope.allLimitMax = $scope.courses.length;
+    $scope.departments = departments;
+
     //object assigning all departments to school, for color determination
     $scope.colorScheme = {
         eng: ["Bio Engin Small Scale Tech","Bioengineering","Computer Science & Engineering","Elect. Engr. & Comp. Sci.","Engineering","Environmental Engineering","Mechanical Engineering","Materials Science and Engr","Physics"], //red
@@ -18,13 +46,13 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
 
     var lessinfo = false;
     $('#moreinfobutton').click(function() {
-            $('#moreinfo').toggle();
-            lessinfo = !lessinfo;
-            if(lessinfo)
-                $('#moreinfobutton').contents().last()[0].textContent='Less info'
-            else
-                $('#moreinfobutton').contents().last()[0].textContent='More info'
-        });
+        $('#moreinfo').toggle();
+        lessinfo = !lessinfo;
+        if(lessinfo)
+            $('#moreinfobutton').contents().last()[0].textContent='Less info'
+        else
+            $('#moreinfobutton').contents().last()[0].textContent='More info'
+    });
 
     //Responsive CSS, according to screen size
     function adjustStyle(width) {
@@ -656,16 +684,6 @@ app.controller('courseListCtrl', function($scope, courseListing, timeCalc) {
         }
     }
 
-});
-    
-//retrieve courseListing, all courses and their data
-app.factory('courseListing', function($http) {
-    return {
-        getAllCourses: function() {
-            var url = "http://ucm.karinaantonio.com" + "/courses.JSON";
-            return $http.get(url);
-        }
-    };
 });
 
 //calculate course time properties
