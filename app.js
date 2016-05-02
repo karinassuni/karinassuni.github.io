@@ -1,46 +1,119 @@
-var url = "https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses/execute?token=p5gMp7SDRx9JN9BefY6kwfZrm";
+// run the crawler once a day from iMac
+// loading indicator for terms' <select>
+
+var terms = [];
 var courses = [];
-var departments = ["All"];
+var departments = [];
 
 $.ajax({
-    method: "POST",
-    url: url,
-    datatype: "json",
+    method: "GET",
+    // get latest-term-crawler's last result
+    url: "https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execs?token=zABEDXTrqrj5axRQfaFKydjA7",
     async: false,
-    success: function checkResult(response) {
-        if (response.status === "RUNNING") {
-            $.ajax({
-                method: "GET",
-                url: response.detailsUrl,
-                datatype: "json",
-                async: false,
-                success: function(newResponse) {
-                    checkResult(newResponse);
+    success: function (response) {
+        var latestCrawl = response[response.length-1];
+        $.ajax({url: latestCrawl.resultsUrl, async: false, method: "GET", success: function(results) {
+            var lastTerm = results[1].pageFunctionResult;
+            terms.push(lastTerm.term);
+            var termArr = results[0].pageFunctionResult;
+            for (var i = 0; i < termArr.length - 1; ++i) // skips lastTerm, which is already added
+                terms.push(termArr[i]);
+            courses.push(lastTerm.courses);
+            departments.push(["All"].concat(lastTerm.departments));
+
+            var lastCrawlTime = new Date(latestCrawl.finishedAt);
+            var hourDifference = (lastCrawlTime - Date.now())/(1000 * 60 * 60);
+
+            if (hourDifference > 1) {
+                // run latest-term-crawler
+                $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execute?token=NjBybQ5CEvWEX8HA9hzbW2YZJ");
+                // run other-terms-crawler
+                $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index?token=rnYJdfkZ7DYwbwDiMsJBZ8LrW")
+            }
+
+            $.get(
+                // get other-term-crawler's last result
+                "https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execs?token=KAimurKeCXy7FyvN5teEZAs9W",
+                function (response) {
+                    var latestCrawl = response[response.length-1];
+                    $.get(latestCrawl.resultsUrl, function(results) {
+                        var otherTerms = results; // lastTerm not included
+                        for (var i = 1; i < otherTerms.length; ++i) { // skips index page
+                            var resultsPerTerm = otherTerms[i].pageFunctionResult;
+                            courses.push(resultsPerTerm.courses);
+                            departments.push(["All"].concat(resultsPerTerm.departments));
+                        }
+                    });
                 }
-            });
-        }
-        else if (response.status === "SUCCEEDED") {
-            $.ajax(response.resultsUrl, {async: false}).done(function(results) {
-                courses = results[0].pageFunctionResult.courses;
-                departments = departments.concat(results[0].pageFunctionResult.departments);
-            });
-        }
+            );
+        }});
     }
 });
 
-
 var app = angular.module('courser', []);
-app.controller('courseListCtrl', function($scope, timeCalc) {
+app.controller('courseListCtrl', function($scope, $http, timeCalc) {
 
     $scope.loading = false;
     $scope.courses = courses;
-    $scope.allLimitMax = $scope.courses.length;
     $scope.departments = departments;
+    $scope.term = 0;
+    $scope.terms = terms;
+    $scope.selectedTerm = terms[0];
+    $scope.allLimitMax = $scope.courses[$scope.term].length;
+
+    // $http.get(
+    //     // get latest-term-crawler's last result
+    //     "https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execs?token=zABEDXTrqrj5axRQfaFKydjA7"
+    // ).then(function (response) {
+    //     var latestCrawl = response.data[response.data.length-1];
+    //     $http.get(latestCrawl.resultsUrl).then(function(results) {
+    //         var lastTerm = results.data[1].pageFunctionResult;
+    //         $scope.terms.push(lastTerm.term);
+    //         var termArr = results.data[0].pageFunctionResult;
+    //         for (var i = 0; i < termArr.length - 1; ++i) // skips lastTerm, which is already added
+    //             $scope.terms.push(termArr[i]);
+    //         $scope.courses.push(lastTerm.courses);
+    //         $scope.departments.push(["All"].concat(lastTerm.departments));
+    //         $scope.allLimitMax = $scope.courses[$scope.term].length;
+    //         $scope.loading = false;
+
+    //         var lastCrawlTime = new Date(latestCrawl.finishedAt);
+    //         var hourDifference = (lastCrawlTime - Date.now())/(1000 * 60 * 60);
+
+    //         if (hourDifference > 1) {
+    //             // run latest-term-crawler
+    //             $http.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execute?token=NjBybQ5CEvWEX8HA9hzbW2YZJ");
+    //             // run other-terms-crawler
+    //             $http.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index?token=rnYJdfkZ7DYwbwDiMsJBZ8LrW")
+    //         }
+
+    //         $http.get(
+    //             // get other-term-crawler's last result
+    //             "https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execs?token=KAimurKeCXy7FyvN5teEZAs9W"
+    //         ).then(function (response) {
+    //             var latestCrawl = response.data[response.data.length-1];
+    //             $http.get(latestCrawl.resultsUrl).then(function(results) {
+    //                 var otherTerms = results.data; // lastTerm not included
+    //                 for (var i = 1; i < otherTerms.length; ++i) { // skips index page
+    //                     var resultsPerTerm = otherTerms[i].pageFunctionResult;
+    //                     $scope.courses.push(resultsPerTerm.courses);
+    //                     $scope.departments.push(["All"].concat(resultsPerTerm.departments));
+    //                 }
+    //             });
+    //         });
+    //     });
+    // });
+
+    $scope.changeTerm = function (selectedTerm) {
+        // if selected courses => warning! changing terms will delete your slections. continue?
+        $scope.term = $scope.terms.indexOf(selectedTerm);
+        $scope.clear();
+    }
 
     //object assigning all departments to school, for color determination
     $scope.colorScheme = {
         eng: ["Bio Engin Small Scale Tech","Bioengineering","Computer Science & Engineering","Elect. Engr. & Comp. Sci.","Engineering","Environmental Engineering","Mechanical Engineering","Materials Science and Engr","Physics"], //red
-        natsci: ["Biological Sciences","Chemistry","Environmental Systems (GR)","Earth Systems Science","Nat Sciences Undergrad Studies","Quantitative & Systems Biology", "Mathematics"], //yelow
+        natsci: ["Biological Sciences","Chemistry","Environmental Systems (GR)","Earth Systems Science","Nat Sciences Undergrad Studies","Quantitative & Systems Biology", "Mathematics"], //yellow
         ssha: ["Anthropology","Art","Chicano Chicana Studies","Chinese","Cognitive Science","Core","Community Research and Service","Economics","English","French","Global Arts Studies Program","History","Interdisciplinary Humanities","Japanese","Management","Natural Sciences Education","Public Health"," Philosophy","Political Science","Psychology","Social Sciences","Sociology","Spanish","Undergraduate Studies","World Heritage","Writing"], //blue
     };
 
@@ -48,7 +121,7 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
     $('#moreinfobutton').click(function() {
         $('#moreinfo').toggle();
         lessinfo = !lessinfo;
-        if(lessinfo)
+        if (lessinfo)
             $('#moreinfobutton').contents().last()[0].textContent='Less info'
         else
             $('#moreinfobutton').contents().last()[0].textContent='More info'
@@ -57,7 +130,7 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
     //Responsive CSS, according to screen size
     function adjustStyle(width) {
         width = parseInt(width);
-        if(width < 1365 && width > 900) {
+        if (width < 1365 && width > 900) {
             $('#mon').contents().last()[0].textContent='M';
             $('#tues').contents().last()[0].textContent='T';
             $('#wed').contents().last()[0].textContent='W';
@@ -69,7 +142,7 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
             $('#moreinfobutton').contents().last()[0].textContent='More info' //reset more/less info state
             $('#coursedumpholder').removeClass('container');
         }
-        else if(width < 900) {
+        else if (width < 900) {
             $("#phone-stylesheet").attr("href", "phone.css");
             $('#coursedumpholder').addClass('container');
             $('#mon').contents().last()[0].textContent='M';
@@ -94,17 +167,22 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
         }
     }
 
-    $(function() {
-      adjustStyle($(this).width());
-      $(window).resize(function() {
+    $(document).ready(function() {
         adjustStyle($(this).width());
-      });
+        $(window).resize(function() {
+            adjustStyle($(this).width());
+        });
     });
-    
+
     //Manage localStorage and textarea, so the former is never null so it can be concatenated to
-    if(localStorage.crns === undefined)
-        localStorage.crns = ''
-    $('#coursedump').val(localStorage.getItem("crns").trim());
+    if (!localStorage.crns) {
+        localStorage.crns = '';
+        $scope.localStorageIsEmpty = true;
+    }
+    else {
+        $('#coursedump').val(localStorage.getItem("crns").trim());
+        $scope.localStorageIsEmpty = false;
+    }
 
     //for undoing
     $scope.clearing = false;
@@ -118,7 +196,7 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
         });
 
         $scope.clearing = true;
-        while($scope.scheduledCourses.length > 0) {
+        while ($scope.scheduledCourses.length > 0) {
             $scope.scheduledCourses.forEach(function(course) {
                 $scope.unschedule(course.CRN);
             });
@@ -126,36 +204,42 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
         $scope.clearing = false;
     }
 
+    $scope.clearStorage = function() {
+        $('#coursedump').val("");
+        localStorage.crns = "";
+        $scope.localStorageIsEmpty = true;
+    }
+
     //undo action: clear, add, delete (and parse???)
     $scope.undoing = false;
     $scope.undo = function(opts) {
-        if($scope.actions[$scope.actions.length-1]['type'] == 'add') {
+        if ($scope.actions[$scope.actions.length-1]['type'] == 'add') {
             $scope.undoing = true;
             $scope.unschedule($scope.actions[$scope.actions.length-1]['sc'].CRN);
             $scope.actions.splice(-1,1);
             $scope.undoing = false;
         }
 
-        else if($scope.actions[$scope.actions.length-1]['type'] == 'remove') {
+        else if ($scope.actions[$scope.actions.length-1]['type'] == 'remove') {
             $scope.undoing = true;
             $scope.schedule($scope.actions[$scope.actions.length-1]['sc']);
             $scope.actions.splice(-1,1);
             $scope.undoing = false;
         }
 
-        else if($scope.actions[$scope.actions.length-1]['type'] == 'Add all') {
+        else if ($scope.actions[$scope.actions.length-1]['type'] == 'Add all') {
             $scope.undoing = true;
-            for(crn in $scope.actions[$scope.actions.length-1]['sc']) {
+            for (crn in $scope.actions[$scope.actions.length-1]['sc']) {
                 $scope.unschedule($scope.actions[$scope.actions.length-1]['sc'][crn]);
             }
             $scope.actions.splice(-1,1);
         }
 
-        else if($scope.actions[$scope.actions.length-1]['type'] == 'clear'){
+        else if ($scope.actions[$scope.actions.length-1]['type'] == 'clear'){
             $scope.undoing = true;
-            for(course in $scope.actions[$scope.actions.length-1]['sc']) {
+            for (course in $scope.actions[$scope.actions.length-1]['sc']) {
                 //$scope.schedule($scope.actions[$scope.actions.length-1]['sc'][course]); BAD BECAUSE CAUSES SOME COURSES TO OVERLAP; DO THIS INSTEAD:
-                $scope.schedule($scope.findCourse($scope.actions[$scope.actions.length-1]['sc'][course].CRN, $scope.courses)[0])
+                $scope.schedule($scope.findCourse($scope.actions[$scope.actions.length-1]['sc'][course].CRN, $scope.courses[$scope.term])[0])
             }
             $scope.actions.splice(-1,1);
             $scope.undoing = false;
@@ -163,110 +247,112 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
         //remove duplicate actions, which tend to show up with 'remove' for some reason
         var count = 0;
         var i = 0;
-        for(action in $scope.actions) {
-            if(JSON.stringify($scope.actions[action]) === JSON.stringify($scope.actions[action])) {
+        for (action in $scope.actions) {
+            if (JSON.stringify($scope.actions[action]) === JSON.stringify($scope.actions[action])) {
                 count++;
                 i = action;
             }
         }
-        if(count>1)
+        if (count>1)
             $scope.actions.splice(i, 1);
     }
 
     //hover preview of what elements will be removed
     $scope.undoHover = function(opts) {
-        if($scope.actions[$scope.actions.length-1]['type'] == 'add') {
+        if ($scope.actions[$scope.actions.length-1]['type'] == 'add') {
             $scope.actions[$scope.actions.length-1]['sc'];
         }
 
-        else if($scope.actions[$scope.actions.length-1]['type'] == 'remove') {
+        else if ($scope.actions[$scope.actions.length-1]['type'] == 'remove') {
             $scope.schedule($scope.actions[$scope.actions.length-1]['sc']);
         }
 
-        else if($scope.actions[$scope.actions.length-1]['type'] == 'Add all') {
-            for(crn in $scope.actions[$scope.actions.length-1]['sc']) {
+        else if ($scope.actions[$scope.actions.length-1]['type'] == 'Add all') {
+            for (crn in $scope.actions[$scope.actions.length-1]['sc']) {
                 $scope.unschedule($scope.actions[$scope.actions.length-1]['sc'][crn]);
             }
         }
 
-        else if($scope.actions[$scope.actions.length-1]['type'] == 'clear'){
-            for(course in $scope.actions[$scope.actions.length-1]['sc']) {
+        else if ($scope.actions[$scope.actions.length-1]['type'] == 'clear'){
+            for (course in $scope.actions[$scope.actions.length-1]['sc']) {
                 $scope.schedule($scope.actions[$scope.actions.length-1]['sc'][course]);
             }
         }
     }
-    
+
     //core global variables
     $scope.actions = [];
     $scope.scheduledCourses = [];
     $scope.overlaps = [];
     $scope.dupes = 0;
     $scope.parsing = false;
-     
+
     //manage cases where one CRN has two different day/time slots, see schedule()
     $scope.dupeWorker = function(CRN) {
-        for(var i=1; i<$scope.dupes; i++) {
-            var course = $scope.findCourse(CRN, $scope.courses)[i]
-            if(course.actv != "EXAM")
+        for (var i=1; i<$scope.dupes; i++) {
+            var course = $scope.findCourse(CRN, $scope.courses[$scope.term])[i]
+            if (course.actv != "EXAM")
                 $scope.schedule(course);
         }
         $scope.dupes = 0;
     }
-    
+
     //schedule all CRNS in textarea
     $scope.parseDump = function() {
-        
-            $scope.$watch(function() { return $scope.loading; },
-            function() {
-                if(!$scope.loading)
-                    parse();
-            });
-        
-        
-        function parse() {
 
-            $scope.parsing = true;
+        $scope.$watch(function() { return $scope.loading; },
+                      function() {
+                          if (!$scope.loading)
+                              parse();
+                      });
 
-            var str = $("#coursedump").val();
-            var re = /(\d{5})/g;
-            var m; //= an array
-            
-            while((m = re.exec(str)) !== null) {
-                if(m.index === re.lastIndex) {
-                    re.lastIndex++;
-                }
-                $scope.schedule($scope.findCourse(m[1], $scope.courses)[0]);
-            }
-            $scope.parsing = false;
 
-            $scope.actions.push({
-                type: ' ',
-                sc: {}
-            });
+                      function parse() {
 
-            
-            if($scope.scheduledCourses.length > 0)
-                $("#coursedump").val(localStorage.crns.trim());
-        }
+                          $scope.parsing = true;
+
+                          var str = $("#coursedump").val();
+                          var re = /(\d{5})/g;
+                          var m; //= an array
+
+                          while ((m = re.exec(str)) !== null) {
+                              if (m.index === re.lastIndex) {
+                                  re.lastIndex++;
+                              }
+                              $scope.schedule($scope.findCourse(m[1], $scope.courses[$scope.term])[0]);
+                          }
+                          $scope.parsing = false;
+
+                          $scope.actions.push({
+                              type: ' ',
+                              sc: {}
+                          });
+
+
+                          if ($scope.scheduledCourses.length > 0) {
+                              $("#coursedump").val(localStorage.crns.trim());
+                              $scope.localStorageIsEmpty = false;
+                          }
+                      }
     }
-    
+
     //find course in, mostly, scheduledCourses
     $scope.findCourse = function(CRN, arr) {
         arrs = [];
-        for(i in arr) {
-            if(CRN == arr[i].CRN)
+        for (i in arr) {
+            if (CRN == arr[i].CRN)
                 arrs.push(arr[i]);
         }
         return arrs;
     };
-    
+
     //manage overlapping classes
-        $scope.masterOverlap = [[],[],[],[],[]];
-        // = [[[{}]],[[{}]],[[{}]],[[{}]],[[{}]]]; 
-        // $scope.masterOverlap[0] == classesToday [{obj: courseobj, startTime: ts, endTime: te}]
-          //each obj corresponds to one day of the week 's class_
-          //has to store every scheduled course JIC it gets an overlap
-    
+    $scope.masterOverlap = [[],[],[],[],[]];
+    // = [[[{}]],[[{}]],[[{}]],[[{}]],[[{}]]]; 
+    // $scope.masterOverlap[0] == classesToday [{obj: courseobj, startTime: ts, endTime: te}]
+    //each obj corresponds to one day of the week 's class_
+    //has to store every scheduled course JIC it gets an overlap
+
     //Check for and modify around overlap
     function adjustOverlapCSS() {
         //$scope.masterOverlap[day] == [[{class_ object}],[{}],...] == classesToday
@@ -274,11 +360,11 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
         //$scope.masterOverlap[day][classGroup][class_] == {class_ object}
         var eventSize = 12.4; //Size of event elements, in %
         //interate through classes per each day of the week
-        for(var day=0; day<5; day++) {
-            for(var classGroup=0; classGroup<$scope.masterOverlap[day].length; /*iterate over array classGroup*/ classGroup++) {
+        for (var day=0; day<5; day++) {
+            for (var classGroup=0; classGroup<$scope.masterOverlap[day].length; /*iterate over array classGroup*/ classGroup++) {
                 var numOverlaps = $scope.masterOverlap[day][classGroup].length;
 
-                for(var class_=0; class_<$scope.masterOverlap[day][classGroup].length; class_++) {
+                for (var class_=0; class_<$scope.masterOverlap[day][classGroup].length; class_++) {
 
                     var Class = $scope.masterOverlap[day][classGroup][class_];
 
@@ -301,9 +387,9 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
                         'margin-left': 'calc(' + eventSize/(numOverlaps)*(class_) + '% + 10px)'
                         // class_ represents the index of the class within the classGroup
                     });
-                    
+
                 }   
-                
+
             }
         }
     }
@@ -314,18 +400,18 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
 
         function convertTimes(courseobj) {
             arr = timeCalc.main(courseobj, 2);
-            
+
             //Convert to military time:
             ts = arr[0]*100 + arr[1];
-            if(arr[2] == 'p' && arr[0] != 12) ts+= 1200;
+            if (arr[2] == 'p' && arr[0] != 12) ts+= 1200;
             te = arr[3]*100 + arr[4];
-            if(arr[5] == 'p' && arr[3] != 12) te+= 1200;
+            if (arr[5] == 'p' && arr[3] != 12) te+= 1200;
 
             return [ts, te];
         }
 
         //if there are no classGroups on any of the days that courseobj is scheduled for, make one of your own classGroups; masterOverlap will contain nothing otherwise
-        for(var day=0; day<courseobj.days.length; day++) {
+        for (var day=0; day<courseobj.days.length; day++) {
             var dayIndex;
             switch(courseobj.days.charAt(day)) {
                 case 'M': dayIndex = 0; break;
@@ -334,21 +420,21 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
                 case 'R': dayIndex = 3; break;
                 case 'F': dayIndex = 4; break;
             }
-            if($scope.masterOverlap[dayIndex].length == 0)
+            if ($scope.masterOverlap[dayIndex].length == 0)
                 $scope.masterOverlap[dayIndex].splice(0, 0, [courseobj]);
         }
 
         //if a course otherCourse in scheduledCourses also falls on the same day, and their times overlap:
-            //1) create a new classGroup for BOTH courseobj and otherCourse and put the classGroup inside the appropriate day in masterOverlap OR 2) if otherCourse is already inside of a classGroup, add courseobj into THAT classGroup rather than create a new one
-            // AND 3) if courseobj overlaps with more than one otherCourse, do either of the above FOR EACH other overlapping course
+        //1) create a new classGroup for BOTH courseobj and otherCourse and put the classGroup inside the appropriate day in masterOverlap OR 2) if otherCourse is already inside of a classGroup, add courseobj into THAT classGroup rather than create a new one
+        // AND 3) if courseobj overlaps with more than one otherCourse, do either of the above FOR EACH other overlapping course
 
         //check every scheduledCourse for overlap
         var otherCourses = $scope.scheduledCourses;
-        
+
         //finding other overlappingCourses:
-        for(var day=0; day<courseobj.days.length; day++) {
+        for (var day=0; day<courseobj.days.length; day++) {
             var overlappingCourses = []; //== overlappingCourses TODAY ***
-            for(var course=0; course<otherCourses.length; course++) {
+            for (var course=0; course<otherCourses.length; course++) {
                 var dayIndex;
                 switch(courseobj.days.charAt(day)) {
                     case 'M': dayIndex = 0; break;
@@ -360,10 +446,10 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
 
                 //FOR EACH DAY THAT COURSEOBJ FALLS ON, check if otherCourse also falls on that same day
                 //iterate through each day that otherCourse falls on
-                for(var otherDay=0; otherDay<otherCourses[course].days.length; otherDay++) {
+                for (var otherDay=0; otherDay<otherCourses[course].days.length; otherDay++) {
 
                     //prevent class from matching overlap with itself
-                    if(otherCourses[course] == courseobj)
+                    if (otherCourses[course] == courseobj)
                         break;
 
                     var otherDayIndex;
@@ -376,7 +462,7 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
                     }
 
                     //if courseobj and otherCourse fall on the same $day (dayIndex == otherDayIndex)
-                    if(dayIndex == otherDayIndex) {
+                    if (dayIndex == otherDayIndex) {
                         //check if their TIMES overlap
                         var t1s = convertTimes(courseobj)[0];
                         var t1e = convertTimes(courseobj)[1];
@@ -384,7 +470,7 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
                         var t2e = convertTimes(otherCourses[course])[1];
 
                         //if courseobj and otherCourse OVERLAP on their times TODAY
-                        if(t1s <= t2e && t2s <= t1e) {
+                        if (t1s <= t2e && t2s <= t1e) {
                             //otherCourse overlaps with courseobj; using the loop, overlappingCourses ends up holding all of the otherCourses that overlap with courseobj, so that...
                             overlappingCourses.push(otherCourses[course]);
                             alert("WARNING: " + courseobj.cnum + " and " + otherCourses[course].cnum + " overlap!")
@@ -394,7 +480,7 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
                 }
             }
             //...so that we can synthesize a new classGroup combining them ALL
-            if(overlappingCourses.length > 0) {
+            if (overlappingCourses.length > 0) {
                 overlappingCourses.push(courseobj);
                 $scope.masterOverlap[dayIndex].splice(0, overlappingCourses.length, overlappingCourses);
                 adjustOverlapCSS();
@@ -403,101 +489,101 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
     }
     $scope.unscheduleMaster = function(courseobj) {
         //just need to find all instances of courseobj and remove them
-        for(var day=0; day<5; day++) {
-            for(var classGroup=0; classGroup<$scope.masterOverlap[day].length; classGroup ++) {
+        for (var day=0; day<5; day++) {
+            for (var classGroup=0; classGroup<$scope.masterOverlap[day].length; classGroup ++) {
                 //if found courseobj in a classGroup... remove it.
                 var courseobjIndex = $scope.masterOverlap[day][classGroup].indexOf(courseobj);
-                if(courseobjIndex > -1) {
+                if (courseobjIndex > -1) {
                     $scope.masterOverlap[day][classGroup].splice(courseobjIndex, 1);
                     adjustOverlapCSS();
                 }
             } 
         }
     }
-    
+
     //schedule course
     $scope.schedule = function(courseobj) {
 
         ///////Undo, error-management///////
-            //make undoable by adding to actions list if appropriate
-            if($scope.undoing == false && $scope.parsing == false) {
-                $scope.actions.push({
-                    type: 'add',
-                    sc: courseobj
-                });
-            }
+        //make undoable by adding to actions list if appropriate
+        if ($scope.undoing == false && $scope.parsing == false) {
+            $scope.actions.push({
+                type: 'add',
+                sc: courseobj
+            });
+        }
 
-            //prevent adding courses with null time info
-            if(courseobj.days == " " || courseobj.time.indexOf('TBD') != -1) {
-                alert("Error: Course days/times TBD");
-                return;
-            }
-            
-            //don't schedule duplicates
-            if($scope.scheduledCourses) { //!== undefined
-                for(var i=0; i<$scope.findCourse(courseobj.CRN, $scope.scheduledCourses).length; i++) {
-                    if($scope.findCourse(courseobj.CRN, $scope.scheduledCourses)[i] == courseobj) {
-                        return;
-                    }
+        //prevent adding courses with null time info
+        if (courseobj.days == " " || courseobj.time.indexOf('TBD') != -1) {
+            alert("Error: Course days/times TBD");
+            return;
+        }
+
+        //don't schedule duplicates
+        if ($scope.scheduledCourses) { //!== undefined
+            for (var i=0; i<$scope.findCourse(courseobj.CRN, $scope.scheduledCourses).length; i++) {
+                if ($scope.findCourse(courseobj.CRN, $scope.scheduledCourses)[i] == courseobj) {
+                    return;
                 }
             }
+        }
 
         ///////Inject HTML///////
-            var title = "";
-            var time = "";
-            var daysstr = courseobj.days;
-            var coursetag = timeCalc.main(courseobj, 0);
+        var title = "";
+        var time = "";
+        var daysstr = courseobj.days;
+        var coursetag = timeCalc.main(courseobj, 0);
 
-            var justAdded = [];
-            function modifyTitleTime(courseobj) {
-                if(courseobj.ctitle.indexOf('-') != -1) {
-                    title = courseobj.ctitle.substring(0,courseobj.ctitle.indexOf('-'));
-                    cinfo = courseobj.ctitle.substring(courseobj.ctitle.indexOf('-')+2);
-                    master = true;
-                }
-                else title = courseobj.ctitle;
+        var justAdded = [];
+        function modifyTitleTime(courseobj) {
+            if (courseobj.ctitle.indexOf('-') != -1) {
+                title = courseobj.ctitle.substring(0,courseobj.ctitle.indexOf('-'));
+                cinfo = courseobj.ctitle.substring(courseobj.ctitle.indexOf('-')+2);
+                master = true;
+            }
+            else title = courseobj.ctitle;
 
-                var ctime = courseobj.time;
-                time = ctime.substring(0,ctime.length-1-1) + ' ' + ctime.substring(ctime.length-1-1,ctime.length-1) + '.m.';
-            }
-            modifyTitleTime(courseobj);
-            function injectListHTML(courseobj) {
-                var liststr = '<div data-crn="' + courseobj.CRN + '" class="list"><span data-crn="' + courseobj.CRN + '" class="glyphicon glyphicon-remove-circle removebtn"></span><b>' + title + ': <br>' + courseobj.cnum + ' ' + courseobj.actv + ' </b>- ' + courseobj.CRN + '<br><small>' + time + ', ' + courseobj.days + '</small></div>';
-                var $jQOL = $($.parseHTML(liststr));
-                $("#clist").append($jQOL);
-                $scope.cssColor(courseobj, $jQOL);
-            }
-            injectListHTML(courseobj);
-            function injectCalendarHTML(courseobj) {
-                var $jQO;
-                var i = daysstr.length;
-                //Loop for every course day i
-                while(i--) {
-                    var coursestr = '<div ' + 'data-crn="' + courseobj.CRN + '" ' + 'data-added="true" ' + 'class="event"><span data-crn="' + courseobj.CRN + '" class="glyphicon glyphicon-remove-circle removebtn onschedbox"></span>';
-                    coursestr = (coursestr+'<b>'+courseobj.cnum+' '+courseobj.actv+'</b> <small>'+time+' <sup>['+courseobj.CRN+']</sup></small>'+'</div>').replace("event","event "+daysstr.charAt(i).toLowerCase());
-                    //console.log("Before CSS: " + coursestr)
-                    $jQO = $($.parseHTML(coursestr));
-                    $(coursetag).append($jQO);
-                    
-                    var durationCSS = timeCalc.main(courseobj, 1) + 'px';
-                    var startShiftCSS = 'calc( -20px ' + '- 60px + ' + timeCalc.main(courseobj, 2)[1] + 'px' + ')';
-                    
-                    //Starting CSS for all courseobjs:
-                    $jQO.css({
-                        'margin-top': startShiftCSS,
-                        'height': durationCSS,
-                        'color': 'white',
-                        'border-radius': '5px'
-                    });
-                    $scope.cssColor(courseobj, $jQO);
+            var ctime = courseobj.time;
+            time = ctime.substring(0,ctime.length-1-1) + ' ' + ctime.substring(ctime.length-1-1,ctime.length-1) + '.m.';
+        }
+        modifyTitleTime(courseobj);
+        function injectListHTML(courseobj) {
+            var liststr = '<div data-crn="' + courseobj.CRN + '" class="list"><span data-crn="' + courseobj.CRN + '" class="glyphicon glyphicon-remove-circle removebtn"></span><b>' + title + ': <br>' + courseobj.cnum + ' ' + courseobj.actv + ' </b>- ' + courseobj.CRN + '<br><small>' + time + ', ' + courseobj.days + '</small></div>';
+            var $jQOL = $($.parseHTML(liststr));
+            $("#clist").append($jQOL);
+            $scope.cssColor(courseobj, $jQOL);
+        }
+        injectListHTML(courseobj);
+        function injectCalendarHTML(courseobj) {
+            var $jQO;
+            var i = daysstr.length;
+            //Loop for every course day i
+            while (i--) {
+                var coursestr = '<div ' + 'data-crn="' + courseobj.CRN + '" ' + 'data-added="true" ' + 'class="event"><span data-crn="' + courseobj.CRN + '" class="glyphicon glyphicon-remove-circle removebtn onschedbox"></span>';
+                coursestr = (coursestr+'<b>'+courseobj.cnum+' '+courseobj.actv+'</b> <small>'+time+' <sup>['+courseobj.CRN+']</sup></small>'+'</div>').replace("event","event "+daysstr.charAt(i).toLowerCase());
+                //console.log("Before CSS: " + coursestr)
+                $jQO = $($.parseHTML(coursestr));
+                $(coursetag).append($jQO);
 
-                    justAdded.push($jQO);
-                    //OverlapTester:
-                    console.log("**ADDED.CSS: " + $jQO.prop('outerHTML'))
-                }
+                var durationCSS = timeCalc.main(courseobj, 1) + 'px';
+                var startShiftCSS = 'calc( -20px ' + '- 60px + ' + timeCalc.main(courseobj, 2)[1] + 'px' + ')';
+
+                //Starting CSS for all courseobjs:
+                $jQO.css({
+                    'margin-top': startShiftCSS,
+                    'height': durationCSS,
+                    'color': 'white',
+                    'border-radius': '5px'
+                });
+                $scope.cssColor(courseobj, $jQO);
+
+                justAdded.push($jQO);
+                //OverlapTester:
+                console.log("**ADDED.CSS: " + $jQO.prop('outerHTML'))
             }
-            injectCalendarHTML(courseobj);
-        
+        }
+        injectCalendarHTML(courseobj);
+
 
         $scope.scheduledCourses.push(courseobj);
         //console.log("running scheduleMaster()")
@@ -507,146 +593,150 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
 
 
         ///////JQUERY, CSS, LOCAL STORAGE///////
-            //courseobj hover - need here.
-            $('div[data-crn="' + courseobj.CRN + '"]').hover(function() {
-                $('div[data-crn="' + courseobj.CRN + '"]').addClass('active');
-            },function(){
-                $('div[data-crn="' + courseobj.CRN + '"]').removeClass('active');
-            });
-            //Click remove button--UNSCHEDULE - need here.
-            $('.removebtn').click(function(e) {
-                var crn = $(this).data("crn");
-                //$(this).remove(); //remove the remove button itself
-                $scope.unschedule(crn);
-                e.stopPropagation();
-            });
+        //courseobj hover - need here.
+        $('div[data-crn="' + courseobj.CRN + '"]').hover(function() {
+            $('div[data-crn="' + courseobj.CRN + '"]').addClass('active');
+        },function(){
+            $('div[data-crn="' + courseobj.CRN + '"]').removeClass('active');
+        });
+        //Click remove button--UNSCHEDULE - need here.
+        $('.removebtn').click(function(e) {
+            var crn = $(this).data("crn");
+            //$(this).remove(); //remove the remove button itself
+            $scope.unschedule(crn);
+            e.stopPropagation();
+        });
 
-            //work with same CRN on different day at different time
-            if($scope.dupes == 0 && $scope.findCourse(courseobj.CRN, $scope.courses).length > 1) {
-                $scope.dupes = $scope.findCourse(courseobj.CRN, $scope.courses).length;
-                $scope.dupeWorker(courseobj.CRN);
-            }
+        //work with same CRN on different day at different time
+        if ($scope.dupes == 0 && $scope.findCourse(courseobj.CRN, $scope.courses[$scope.term]).length > 1) {
+            $scope.dupes = $scope.findCourse(courseobj.CRN, $scope.courses[$scope.term]).length;
+            $scope.dupeWorker(courseobj.CRN);
+        }
 
-            //update table CRN css
-            $('.courserow[data-crn="' + courseobj.CRN + '"]').css({
-                'background-color' : '#A29061',
-                'color': 'white'
-            });
+        //update table CRN css
+        $('.courserow[data-crn="' + courseobj.CRN + '"]').css({
+            'background-color' : '#A29061',
+            'color': 'white'
+        });
 
-            //update localStorage and textarea
-            if(localStorage.crns.indexOf(courseobj.CRN) == -1) {
-                localStorage.crns = (localStorage.crns + " " + courseobj.CRN).trim();
-                if(localStorage.crns.indexOf('  ') > -1)
-                    localStorage.crns.replace('  ', ' ');
-                $('#coursedump').val(localStorage.getItem("crns"));
-            }
+        //update localStorage and textarea
+        if (localStorage.crns.indexOf(courseobj.CRN) == -1) {
+            localStorage.crns = (localStorage.crns + " " + courseobj.CRN).trim();
+            if (localStorage.crns.indexOf('  ') > -1)
+                localStorage.crns.replace('  ', ' ');
+            $('#coursedump').val(localStorage.getItem("crns"));
+            $scope.localStorageIsEmpty = false;
+        }
     }
-    
+
     //unschedule course
     $scope.unschedule = function(crn) {
 
         //Undo support
-            if($scope.undoing == false && $scope.clearing == false) {
-                $scope.$apply(function() {
-                    $scope.actions.push({
-                        type: 'remove',
-                        sc: $scope.findCourse(crn, $scope.courses)[0]
-                    });
+        if ($scope.undoing == false && $scope.clearing == false) {
+            $scope.$apply(function() {
+                $scope.actions.push({
+                    type: 'remove',
+                    sc: $scope.findCourse(crn, $scope.courses[$scope.term])[0]
                 });
-            }
+            });
+        }
 
         //Remove HTML and CSS
-            $('div[data-crn="' + crn + '"]').remove();
-            $('.courserow[data-crn="' + crn + '"]').css({
-                'background-color' : '',
-                'color': ''
-            });
+        $('div[data-crn="' + crn + '"]').remove();
+        $('.courserow[data-crn="' + crn + '"]').css({
+            'background-color' : '',
+            'color': ''
+        });
 
         //Remove from models
-            var courseobj = {};
-            for(var i=0; i<$scope.scheduledCourses.length; i++) {
-                if($scope.scheduledCourses[i].CRN == crn){
-                    courseobj = $scope.scheduledCourses[i];
-                    $scope.scheduledCourses.splice(i,1);
-                }
+        var courseobj = {};
+        for (var i=0; i<$scope.scheduledCourses.length; i++) {
+            if ($scope.scheduledCourses[i].CRN == crn){
+                courseobj = $scope.scheduledCourses[i];
+                $scope.scheduledCourses.splice(i,1);
             }
-            localStorage.crns = localStorage.crns.replace(crn, '');
-            $scope.unscheduleMaster(courseobj);
+        }
+        localStorage.crns = localStorage.crns.replace(crn, '');
+        $scope.unscheduleMaster(courseobj);
 
         //Trim textarea
-            var str = localStorage.crns;
-            var re = /(\s{2,})/g;
-            var result = str.replace(re, ' ');
-            localStorage.crns = result;
-            $('#coursedump').val(localStorage.getItem("crns").trim());
+        var str = localStorage.crns;
+        var re = /(\s{2,})/g;
+        var result = str.replace(re, ' ');
+        localStorage.crns = result;
+        $('#coursedump').val(localStorage.getItem("crns").trim());
+
+        if (!localStorage.crns)
+            $scope.localStorageIsEmpty = true;
 
         //$scope.verifyCorresp(courseobj);
     }            
-    
+
     //toggle for adding/removing courses from the table
     $scope.toggleSchedule = function(courseobj) {
-        if($scope.findCourse(courseobj.CRN, $scope.scheduledCourses).length >= 1) {
+        if ($scope.findCourse(courseobj.CRN, $scope.scheduledCourses).length >= 1) {
             $scope.unschedule(courseobj.CRN)
         }
         else $scope.schedule(courseobj)
     }
-    
+
     ////////////////////   Filters:   ////////////////////
     //Global filter variables
-        $scope.allLimit = 30;
-        $scope.reachedEnd = false;
-        $scope.filter = {
-            litAll: false,
-            closed: false,
-            department: "All",
-            incTBD: false
-        }
-    
+    $scope.allLimit = 30;
+    $scope.reachedEnd = false;
+    $scope.filter = {
+        litAll: false,
+        closed: false,
+        department: "All",
+        incTBD: false
+    }
+
     //Comparator:
     $scope.filterByDepartment = function(ac, ex) { //passed "expected" value from filter expression (in this case {department: filter['department']}),  actual value from the object in the array
         //in this case ac = filter['department'], a string
-        if(ac === undefined || ex === undefined) {
+        if (ac === undefined || ex === undefined) {
             //console.log("undefined")
             return false;
         }
-        if(ex == ac.department || ex == "All")
+        if (ex == ac.department || ex == "All")
             return true;
         return false;
     }
     //Expression:
     $scope.filterInClosed = function(course) { //passed value, index, and array
-        if($scope.filter['closed'] == true && (course.seats_avail == "Closed" || Number(course.seats_avail) <= 0)) //True, include closed
+        if ($scope.filter['closed'] == true && (course.seats_avail == "Closed" || Number(course.seats_avail) <= 0)) //True, include closed
             return course;
-        else if($scope.filter['closed'] == false && (course.seats_avail == "Closed" || Number(course.seats_avail) <= 0)) //False, don't
+        else if ($scope.filter['closed'] == false && (course.seats_avail == "Closed" || Number(course.seats_avail) <= 0)) //False, don't
             return;
         else return course;
     }
     //pseudo-limitTo filter expression:
     $scope.limitAll = function(course, index) {
-        if(index == $scope.allLimitMax-1)
+        if (index == $scope.allLimitMax-1)
             $scope.reachedEnd = true;
-        if($scope.filter['department'] == "All" && index < $scope.allLimit && !$scope.filter['litAll'])
+        if ($scope.filter['department'] == "All" && index < $scope.allLimit && !$scope.filter['litAll'])
             return course;
-        else if($scope.filter['department'] != "All")
+        else if ($scope.filter['department'] != "All")
             return course;
-        else if($scope.filter['litAll'])
+        else if ($scope.filter['litAll'])
             return course;
         else return;
     }
     //incTBD expression:
     $scope.filterInTBD = function(course) { //passed value, index, and array
-        if($scope.filter['incTBD'] == true && (course.days == " " || course.time == "TBD-TBD")) 
+        if ($scope.filter['incTBD'] == true && (course.days == " " || course.time == "TBD-TBD")) 
             return course;
-        else if($scope.filter['incTBD'] == true && (course.days != " " && course.time != "TBD-TBD"))
+        else if ($scope.filter['incTBD'] == true && (course.days != " " && course.time != "TBD-TBD"))
             return course;
         else if (!$scope.filter['incTBD'] && (course.days != " " && course.time != "TBD-TBD"))
             return course;
         else return;
     }
-    
+
     //determine and return unique visually accessible color of course
     $scope.cssColor = function(courseobj, $jQO) {
-        if($scope.colorScheme['eng'].indexOf(courseobj.department) > -1) {
+        if ($scope.colorScheme['eng'].indexOf(courseobj.department) > -1) {
             var color = new KolorWheel([0, 67, 35]);
             color.l+= ($scope.colorScheme['eng'].indexOf(courseobj.department)*2.7);
             color.s+= ($scope.colorScheme['eng'].indexOf(courseobj.department)*3)
@@ -658,7 +748,7 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
                 'border': '2px solid ' + color.getHex()
             });
         }
-        else if($scope.colorScheme['natsci'].indexOf(courseobj.department) > -1) {
+        else if ($scope.colorScheme['natsci'].indexOf(courseobj.department) > -1) {
             var color = new KolorWheel([45, 67, 35]);
             color.l+= ($scope.colorScheme['natsci'].indexOf(courseobj.department)*2.7);
             color.s+= ($scope.colorScheme['natsci'].indexOf(courseobj.department)*3)
@@ -670,7 +760,7 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
                 'border': '2px solid ' + color.getHex()
             });
         }
-        else if($scope.colorScheme['ssha'].indexOf(courseobj.department) > -1) {
+        else if ($scope.colorScheme['ssha'].indexOf(courseobj.department) > -1) {
             var color = new KolorWheel([220, 67, 35]);
             color.l+= ($scope.colorScheme['ssha'].indexOf(courseobj.department)*2.7);
             color.s+= ($scope.colorScheme['ssha'].indexOf(courseobj.department)*3)
@@ -704,44 +794,46 @@ app.factory('timeCalc', function() {
     return {
         main: function(courseobj, opt){
             var str = courseobj.time;
-            
+
             var re_endMerid = /\d+:\d+-\d+:\d+([ap])m/;
             var endMerid = (function() {var m = re_endMerid.exec(str); re_endMerid.lastIndex++; return m[1];})();
             var startMerid = endMerid;
-            
+
             var re_startTime = /(\d+:\d+)-\d+:\d+[ap]m/;
             var startTime = (function() {var m = re_startTime.exec(str); re_startTime.lastIndex++; return m[1];})();
             var startHour = Number(startTime.substring(0,startTime.indexOf(':')));
             var startMin = Number(startTime.substring(1+startTime.indexOf(':')));
-            
+
             var re_endTime = /\d+:\d+-(\d+:\d+)[ap]m/;
             var endTime = (function() {var m = re_endTime.exec(str); re_endTime.lastIndex++; return m[1];})();
             var endHour = Number(endTime.substring(0,endTime.indexOf(':')));
             var endMin = Number(endTime.substring(1+endTime.indexOf(':')));
 
             var duration_min = 0;
-            if(endMerid == 'p' && startHour > endHour && startHour < 12) {
+            if (endMerid == 'p' && startHour > endHour && startHour < 12) {
                 duration_min = ((12 - startHour) + endHour)*60 + (startMin - 60) + endMin;
                 startMerid = 'a';
             }
-            else if(startHour == 12) {
+            else if (startHour === 12 && endHour !== 12) {
                 temp = endHour + 12;
                 duration_min = (temp - startHour)*60 + (endMin - startMin);
             }
+            else if (startHour === 12 && endHour === 12)
+                duration_min = endMin - startMin;
             else {
                 duration_min = (endHour - startHour)*60 + (endMin - startMin);
             }
-            
-            if(opt==0) {
-                if(startHour < 11)
+
+            if (opt==0) {
+                if (startHour < 11)
                     return "#" + String(startHour+1) + startMerid;
-                else if(startHour == 11)
+                else if (startHour == 11)
                     return "#12p";
-                else if(startHour == 12)
+                else if (startHour == 12)
                     return "#1p";
                 else return "#" + String(startHour+1) + startMerid;
             }
-            if(opt==1) {
+            if (opt==1) {
                 return duration_min;
             }
             else {
@@ -749,12 +841,12 @@ app.factory('timeCalc', function() {
             }
         }
     };
-}); 
+});
 
 //filter to correctly format times in table
 app.filter('timeCorrect', function() {
-   return function(time) {
-       return time.substring(0,time.length-1-1) + ' ' + time.substring(time.length-1-1,time.length-1) + '.m.';
-   } 
+    return function(time) {
+        return time.substring(0,time.length-1-1) + ' ' + time.substring(time.length-1-1,time.length-1) + '.m.';
+    }
 });
 
