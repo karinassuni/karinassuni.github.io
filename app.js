@@ -61,49 +61,6 @@ app.controller('courseListCtrl', function($scope, $http, timeCalc) {
     $scope.selectedTerm = terms[0];
     $scope.allLimitMax = $scope.courses[$scope.term].length;
 
-    // $http.get(
-    //     // get latest-term-crawler's last result
-    //     "https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execs?token=zABEDXTrqrj5axRQfaFKydjA7"
-    // ).then(function (response) {
-    //     var latestCrawl = response.data[response.data.length-1];
-    //     $http.get(latestCrawl.resultsUrl).then(function(results) {
-    //         var lastTerm = results.data[1].pageFunctionResult;
-    //         $scope.terms.push(lastTerm.term);
-    //         var termArr = results.data[0].pageFunctionResult;
-    //         for (var i = 0; i < termArr.length - 1; ++i) // skips lastTerm, which is already added
-    //             $scope.terms.push(termArr[i]);
-    //         $scope.courses.push(lastTerm.courses);
-    //         $scope.departments.push(["All"].concat(lastTerm.departments));
-    //         $scope.allLimitMax = $scope.courses[$scope.term].length;
-    //         $scope.loading = false;
-
-    //         var lastCrawlTime = new Date(latestCrawl.finishedAt);
-    //         var hourDifference = (lastCrawlTime - Date.now())/(1000 * 60 * 60);
-
-    //         if (hourDifference > 1) {
-    //             // run latest-term-crawler
-    //             $http.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execute?token=NjBybQ5CEvWEX8HA9hzbW2YZJ");
-    //             // run other-terms-crawler
-    //             $http.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index?token=rnYJdfkZ7DYwbwDiMsJBZ8LrW")
-    //         }
-
-    //         $http.get(
-    //             // get other-term-crawler's last result
-    //             "https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execs?token=KAimurKeCXy7FyvN5teEZAs9W"
-    //         ).then(function (response) {
-    //             var latestCrawl = response.data[response.data.length-1];
-    //             $http.get(latestCrawl.resultsUrl).then(function(results) {
-    //                 var otherTerms = results.data; // lastTerm not included
-    //                 for (var i = 1; i < otherTerms.length; ++i) { // skips index page
-    //                     var resultsPerTerm = otherTerms[i].pageFunctionResult;
-    //                     $scope.courses.push(resultsPerTerm.courses);
-    //                     $scope.departments.push(["All"].concat(resultsPerTerm.departments));
-    //                 }
-    //             });
-    //         });
-    //     });
-    // });
-
     $scope.changeTerm = function (selectedTerm) {
         // if selected courses => warning! changing terms will delete your slections. continue?
         $scope.term = $scope.terms.indexOf(selectedTerm);
