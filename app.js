@@ -1,5 +1,6 @@
 // run the crawler once a day from iMac
 // loading indicator for terms' <select>
+// STORE JSON IN LOCALSTORAGE
 
 var terms = [];
 var courses = [];
@@ -22,13 +23,13 @@ $.ajax({
             departments.push(["All"].concat(lastTerm.departments));
 
             var lastCrawlTime = new Date(latestCrawl.finishedAt);
-            var hourDifference = (lastCrawlTime - Date.now())/(1000 * 60 * 60);
+            var hourDifference = (Date.now() - lastCrawlTime)/(1000 * 60 * 60);
 
             if (hourDifference > 1) {
                 // run latest-term-crawler
-                $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execute?token=NjBybQ5CEvWEX8HA9hzbW2YZJ");
+                $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execute?token=tY7DvkDnZbMADSJj32XnK3DnJ");
                 // run other-terms-crawler
-                $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index?token=rnYJdfkZ7DYwbwDiMsJBZ8LrW")
+                $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execute?token=NjBybQ5CEvWEX8HA9hzbW2YZJ");
             }
 
         }});
