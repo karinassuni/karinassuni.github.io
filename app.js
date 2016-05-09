@@ -38,10 +38,20 @@ else {
     departments = JSON.parse(localStorage.allTerms).departments;
     terms = JSON.parse(localStorage.allTerms).terms;
 
-    // run latest-term-crawler
-    $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execute?token=tY7DvkDnZbMADSJj32XnK3DnJ");
-    // run other-terms-crawler
-    $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execute?token=NjBybQ5CEvWEX8HA9hzbW2YZJ");
+    // There's a difference between lastCrawlTime and cacheTime!
+    $.get(
+        "https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execs?token=zABEDXTrqrj5axRQfaFKydjA7",
+        function (response) {
+            var latestCrawl = response[response.length-1];
+            var lastCrawlTime = new Date(latestCrawl.finishedAt);
+            if (hourDifference(Date.now(), lastCrawlTime) > 1) {
+                // run latest-term-crawler
+                $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execute?token=tY7DvkDnZbMADSJj32XnK3DnJ");
+                // run other-terms-crawler
+                $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execute?token=NjBybQ5CEvWEX8HA9hzbW2YZJ");
+            }
+        }
+    );
 }
 
 var app = angular.module('courser', []);
