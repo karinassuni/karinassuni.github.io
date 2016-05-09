@@ -1,43 +1,51 @@
 // run the crawler once a day from iMac
 // loading indicator for terms' <select>
-// STORE JSON IN LOCALSTORAGE
-
 var terms = [];
 var courses = [];
 var departments = [];
 
-$.ajax({
-    method: "GET",
-    // get latest-term-crawler's last result
-    url: "https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execs?token=zABEDXTrqrj5axRQfaFKydjA7",
-    async: false,
-    success: function (response) {
-        var latestCrawl = response[response.length-1];
-        $.ajax({url: latestCrawl.resultsUrl, async: false, method: "GET", success: function(results) {
-            var lastTerm = results[1].pageFunctionResult;
-            terms.push(lastTerm.term);
-            var termArr = results[0].pageFunctionResult;
-            for (var i = 0; i < termArr.length - 1; ++i) // skips lastTerm, which is already added
-                terms.push(termArr[i]);
-            courses.push(lastTerm.courses);
-            departments.push(["All"].concat(lastTerm.departments));
+function hourDifference(later, earlier) {
+    return (later - earlier)/(1000 * 60 * 60);
+}
 
-            var lastCrawlTime = new Date(latestCrawl.finishedAt);
-            var hourDifference = (Date.now() - lastCrawlTime)/(1000 * 60 * 60);
+if (typeof localStorage.allTerms === "undefined" || hourDifference(Date.now(), localStorage.allTerms.cacheTime) > 1) {
+    $.ajax({
+        method: "GET",
+        // get latest-term-crawler's last result
+        url: "https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execs?token=zABEDXTrqrj5axRQfaFKydjA7",
+        async: false,
+        success: function (response) {
+            var latestCrawl = response[response.length-1];
+            $.ajax({
+                method: "GET",
+                url: latestCrawl.resultsUrl,
+                async: false,
+                success: function(results) {
+                    var lastTerm = results[1].pageFunctionResult;
+                    terms.push(lastTerm.term);
+                    var termArr = results[0].pageFunctionResult;
+                    for (var i = 0; i < termArr.length - 1; ++i) // skips lastTerm, which is already added
+                        terms.push(termArr[i]);
+                    courses.push(lastTerm.courses);
+                    departments.push(["All"].concat(lastTerm.departments));
+                }
+            });
+        }
+    });
+}
+else {
+    courses = JSON.parse(localStorage.allTerms).courses;
+    departments = JSON.parse(localStorage.allTerms).departments;
+    terms = JSON.parse(localStorage.allTerms).terms;
 
-            if (hourDifference > 1) {
-                // run latest-term-crawler
-                $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execute?token=tY7DvkDnZbMADSJj32XnK3DnJ");
-                // run other-terms-crawler
-                $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execute?token=NjBybQ5CEvWEX8HA9hzbW2YZJ");
-            }
-
-        }});
-    }
-});
+    // run latest-term-crawler
+    $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execute?token=tY7DvkDnZbMADSJj32XnK3DnJ");
+    // run other-terms-crawler
+    $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execute?token=NjBybQ5CEvWEX8HA9hzbW2YZJ");
+}
 
 var app = angular.module('courser', []);
-app.controller('courseListCtrl', function($scope, $http, timeCalc) {
+app.controller('courseListCtrl', function($scope, timeCalc) {
 
     $scope.loading = false;
     $scope.courses = courses;
@@ -47,22 +55,30 @@ app.controller('courseListCtrl', function($scope, $http, timeCalc) {
     $scope.selectedTerm = terms[0];
     $scope.allLimitMax = $scope.courses[$scope.term].length;
 
-    $.get(
-        // get other-term-crawler's last result
-        "https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execs?token=KAimurKeCXy7FyvN5teEZAs9W",
-        function (response) {
-            var latestCrawl = response[response.length-1];
-            $.get(latestCrawl.resultsUrl, function(results) {
-                var otherTerms = results; // lastTerm not included
-                for (var i = 1; i < otherTerms.length; ++i) { // skips index page
-                    var resultsPerTerm = otherTerms[i].pageFunctionResult;
-                    $scope.courses.push(resultsPerTerm.courses);
-                    $scope.departments.push(["All"].concat(resultsPerTerm.departments));
-                }
-                $scope.filter['department'] = "All";
-            });
-        }
-    );
+    if (typeof localStorage.allTerms === "undefined") {
+        $.get(
+            // get other-term-crawler's last result
+            "https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execs?token=KAimurKeCXy7FyvN5teEZAs9W",
+            function (response) {
+                var latestCrawl = response[response.length-1];
+                $.get(latestCrawl.resultsUrl, function(results) {
+                    var otherTerms = results; // lastTerm not included
+                    for (var i = 1; i < otherTerms.length; ++i) { // skips index page
+                        var resultsPerTerm = otherTerms[i].pageFunctionResult;
+                        $scope.courses.push(resultsPerTerm.courses);
+                        $scope.departments.push(["All"].concat(resultsPerTerm.departments));
+                    }
+                    $scope.filter['department'] = "All";
+                    localStorage.allTerms = JSON.stringify({
+                        courses: $scope.courses,
+                        departments: $scope.departments,
+                        terms: $scope.terms,
+                        cacheTime: Date.now()
+                    });
+                });
+            }
+        );
+    }
 
     $scope.changeTerm = function (selectedTerm) {
         // if selected courses => warning! changing terms will delete your slections. continue?
