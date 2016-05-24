@@ -28,6 +28,9 @@ if (typeof localStorage.allTerms === "undefined" || hourDifference(Date.now(), l
                         terms.push(termArr[i]);
                     courses.push(lastTerm.courses);
                     departments.push(["All"].concat(lastTerm.departments));
+                    localStorage.allTerms.courses = courses;
+                    localStorage.allTerms.departments = departments;
+                    localStorage.allTerms.terms = terms;
                 }
             });
         }
