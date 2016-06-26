@@ -1,72 +1,73 @@
 // run the crawler once a day from iMac
 // loading indicator for terms' <select>
-var terms = [];
-var courses = [];
-var departments = [];
-
-function hourDifference(later, earlier) {
-    return (later - earlier)/(1000 * 60 * 60);
-}
-
-if (typeof localStorage.allTerms === "undefined" || hourDifference(Date.now(), localStorage.allTerms.cacheTime) > 1) {
-    $.ajax({
-        method: "GET",
-        // get latest-term-crawler's last result
-        url: "https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execs?token=zABEDXTrqrj5axRQfaFKydjA7",
-        async: false,
-        success: function (response) {
-            var latestCrawl = response[response.length-1];
-            $.ajax({
-                method: "GET",
-                url: latestCrawl.resultsUrl,
-                async: false,
-                success: function(results) {
-                    var lastTerm = results[1].pageFunctionResult;
-                    terms.push(lastTerm.term);
-                    var termArr = results[0].pageFunctionResult;
-                    for (var i = 0; i < termArr.length - 1; ++i) // skips lastTerm, which is already added
-                        terms.push(termArr[i]);
-                    courses.push(lastTerm.courses);
-                    departments.push(["All"].concat(lastTerm.departments));
-                    localStorage.allTerms.courses = courses;
-                    localStorage.allTerms.departments = departments;
-                    localStorage.allTerms.terms = terms;
-                }
-            });
-        }
-    });
-}
-else {
-    courses = JSON.parse(localStorage.allTerms).courses;
-    departments = JSON.parse(localStorage.allTerms).departments;
-    terms = JSON.parse(localStorage.allTerms).terms;
-
-    // There's a difference between lastCrawlTime and cacheTime!
-    $.get(
-        "https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execs?token=zABEDXTrqrj5axRQfaFKydjA7",
-        function (response) {
-            var latestCrawl = response[response.length-1];
-            var lastCrawlTime = new Date(latestCrawl.finishedAt);
-            if (hourDifference(Date.now(), lastCrawlTime) > 1) {
-                // run latest-term-crawler
-                $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execute?token=tY7DvkDnZbMADSJj32XnK3DnJ");
-                // run other-terms-crawler
-                $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execute?token=NjBybQ5CEvWEX8HA9hzbW2YZJ");
-            }
-        }
-    );
-}
 
 var app = angular.module('courser', []);
 app.controller('courseListCtrl', function($scope, timeCalc) {
 
-    $scope.loading = false;
-    $scope.courses = courses;
-    $scope.departments = departments;
+    $scope.loading = true;
     $scope.term = 0;
-    $scope.terms = terms;
-    $scope.selectedTerm = terms[0];
-    $scope.allLimitMax = $scope.courses[$scope.term].length;
+    $scope.terms = [];
+    $scope.courses = [];
+    $scope.departments = [];
+
+    function hourDifference(later, earlier) {
+        return (later - earlier)/(1000 * 60 * 60);
+    }
+
+    if (typeof localStorage.allTerms === "undefined" || hourDifference(Date.now(), localStorage.allTerms.cacheTime) > 1) {
+        localStorage.allTerms = {
+            courses: [],
+            departments: [],
+            terms: []
+        };
+        $.get(
+            // get latest-term-crawler's last result
+            "https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execs?token=zABEDXTrqrj5axRQfaFKydjA7",
+            function (response) {
+                var latestCrawl = response[response.length-1];
+                $.get(
+                    latestCrawl.resultsUrl,
+                    function(results) {
+                        var lastTerm = results[1].pageFunctionResult;
+                        $scope.terms.push(lastTerm.term);
+                        var termArr = results[0].pageFunctionResult;
+                        for (var i = 0; i < termArr.length - 1; ++i) // skips lastTerm, which is already added
+                            $scope.terms.push(termArr[i]);
+                        $scope.courses.push(lastTerm.courses);
+                        $scope.departments.push(["All"].concat(lastTerm.departments));
+                        localStorage.allTerms.courses = $scope.courses;
+                        localStorage.allTerms.departments = $scope.departments;
+                        localStorage.allTerms.terms = $scope.terms;
+                        $scope.selectedTerm = $scope.terms[0];
+                        $scope.allLimitMax = $scope.courses[$scope.term].length;
+                    }
+                );
+            }
+        );
+    }
+
+    else {
+        $scope.courses = JSON.parse(localStorage.allTerms).courses;
+        $scope.departments = JSON.parse(localStorage.allTerms).departments;
+        $scope.terms = JSON.parse(localStorage.allTerms).terms;
+
+        $scope.selectedTerm = $scope.terms[0];
+        $scope.allLimitMax = $scope.courses[$scope.term].length;
+        // There's a difference between lastCrawlTime and cacheTime!
+        $.get(
+            "https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execs?token=zABEDXTrqrj5axRQfaFKydjA7",
+            function (response) {
+                var latestCrawl = response[response.length-1];
+                var lastCrawlTime = new Date(latestCrawl.finishedAt);
+                if (hourDifference(Date.now(), lastCrawlTime) > 1) {
+                    // run latest-term-crawler
+                    $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execute?token=tY7DvkDnZbMADSJj32XnK3DnJ");
+                    // run other-terms-crawler
+                    $.post("https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execute?token=NjBybQ5CEvWEX8HA9hzbW2YZJ");
+                }
+            }
+        );
+    }
 
     if (typeof localStorage.allTerms === "undefined") {
         $.get(
