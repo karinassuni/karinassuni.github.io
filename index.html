@@ -104,7 +104,7 @@
                             </div>
                             <div class="input-group" id="seldep">
                                 <label for="seldep">Department:</label>
-                                <select class="form-control" id="departmentname" ng-model="filter['department']" ng-options="department as department for department in departments[term]"></select>
+                                <select class="form-control" id="departmentname" ng-model="filter['department']" ng-options="department as department for department in departments[currentTermIndex]"></select>
                             </div>
                             <div class="input-group" id="selterm">
                                 <label for="selterm">Term:</label>
@@ -142,7 +142,7 @@
                     <th style="border-left-style: none; border-right-style: none" class="tnum">Taken</th>
                     <th style="border-left-style: none" class="enrl">Open</th>
                 </tr>
-                <tr class="courserow" data-crn="{{course.CRN}}" ng-style="listColor(course.CRN)" ng-repeat="course in courses[term] | filter: filter['department'] : filterByDepartment | filter: filterInClosed | filter: filterInTBD | filter:course | filter:limitAll : true" ng-if="course.actv != 'EXAM'" ng-mouseup="toggleSchedule(course)">
+                <tr class="courserow" data-crn="{{course.CRN}}" ng-style="listColor(course.CRN)" ng-repeat="course in courses[currentTermIndex] | filter: filter['department'] : filterByDepartment | filter: filterInClosed | filter: filterInTBD | filter:course | filter:limitAll : true" ng-if="course.actv != 'EXAM'" ng-mouseup="toggleSchedule(course)">
                     <td style="text-align: center">{{course.cnum}}</td>
                     <td style="text-align: center">{{course.CRN}}</td>
                     <td style="text-align: center">{{course.department}}</td>
