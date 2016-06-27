@@ -120,7 +120,7 @@
             </div>
         </div>
         <div class="center">
-            <p ng-if="loading" id="loading"><b>Loading course list...</b></p>
+            <p ng-if="loading" id="loading" style="text-align: center"><b>Loading course list...</b></p>
         </div>
         <small id="uptodate">Course listings are always up-to-date!</small><br>
         <div class="container-fluid" id="searchresults">
@@ -161,10 +161,10 @@
                 </tr>
             </table>
         </div>
-        <div class="center" id="showbar" ng-show="!loading && !filter['litAll'] && filter['department'] == 'All' && !reachedEnd && (courses | filter:course).length > 0">
+        <div class="center" id="showbar" ng-show="!loading && !filter['litAll'] && filter['department'] === 'All' && !reachedEnd && (courses | filter:course).length > 0">
             <div id="all" ng-click="filter['litAll'] = true"><text>Show all</text></div><div id="more" ng-click="allLimit= allLimit+30"><text>Show more</text></div>
         </div>
-        <div class="center" id="noresults" ng-if="(courses | filter:course).length == 0">
+        <div class="center" id="noresults" ng-if="!loading && (courses | filter:course).length === 0">
             No courses found. Try checking typos or search options like Show closed classes!
         </div>
     </body>

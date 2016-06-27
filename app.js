@@ -2,7 +2,7 @@
 //  loading indicator for terms' <select>
 
 var app = angular.module('courser', []);
-app.controller('courseListCtrl', function($scope, timeCalc) {
+app.controller('courseListCtrl', function($scope, $http, timeCalc) {
 
     $scope.loading = true;
     $scope.currentTermIndex = 0;
@@ -51,18 +51,25 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
         return (later - earlier)/(1000 * 60 * 60);
     }
 
-    if (typeof localStorage.getItem('allTerms') === 'undefined' || hourDifference(Date.now(), localStorage.getItem('allTerms').cacheTime) > 1) {
-        $.get(
-            //  get latest-term-crawler's last result
-            'https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execs?token=zABEDXTrqrj5axRQfaFKydjA7',
-            function (response) {
-                var latestCrawl = response[response.length-1];
-                $.get(
-                    latestCrawl.resultsUrl,
-                    function(results) {
-                        var lastTerm = results[1].pageFunctionResult;
+    function uiInit() {
+        $scope.loading = false;
+        $scope.selectedTerm = $scope.terms[0];
+        $scope.allLimitMax = $scope.courses[$scope.currentTermIndex].length;
+        $scope.parseDump();
+    }
+
+    // If there are no cached courses, or if the cached courses expired, retrieve a fresh JSON of the LATEST TERM + LIST OF OTHER TERMS
+    if (localStorage.getItem('allTerms') === null || hourDifference(Date.now(), JSON.parse(localStorage.getItem('allTerms')).cacheTime) > 1) {
+        // get the list of recent crawls
+        $http.get('https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execs?token=zABEDXTrqrj5axRQfaFKydjA7')
+            .then(function (response) {
+                var latestCrawl = response.data[response.data.length-1];
+                // get the results of the most recent crawl from the above list of recent crawls
+                $http.get(latestCrawl.resultsUrl)
+                    .then(function(results) {
+                        var lastTerm = results.data[1].pageFunctionResult;
                         $scope.terms.push(lastTerm.term);
-                        var termArr = results[0].pageFunctionResult;
+                        var termArr = results.data[0].pageFunctionResult;
                         for (var i = 0; i < termArr.length - 1; ++i) //  skips lastTerm, which is already added
                             $scope.terms.push(termArr[i]);
                         $scope.courses.push(lastTerm.courses);
@@ -73,60 +80,53 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
                             terms: $scope.terms,
                             cacheTime: Date.now()
                         }));
-                        $scope.selectedTerm = $scope.terms[0];
-                        $scope.allLimitMax = $scope.courses[$scope.currentTermIndex].length;
-                        $scope.parseDump();
+                        uiInit();
+                        // now that the LATEST TERM has been retrieved, retrieve the OTHER terms
+                        $http.get('https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execs?token=KAimurKeCXy7FyvN5teEZAs9W')
+                            .then(function (response) {
+                                var latestCrawl = response.data[response.data.length-1];
+                                $http.get(latestCrawl.resultsUrl)
+                                .then(function(results) {
+                                    var otherTerms = results.data; //  lastTerm not included
+                                    for (var i = 1; i < otherTerms.length; ++i) { //  skips index page
+                                        var resultsPerTerm = otherTerms[i].pageFunctionResult;
+                                        $scope.courses.push(resultsPerTerm.courses);
+                                        $scope.departments.push(['All'].concat(resultsPerTerm.departments));
+                                    }
+                                    localStorage.setItem('allTerms', JSON.stringify({
+                                        courses: $scope.courses,
+                                        departments: $scope.departments,
+                                        terms: $scope.terms,
+                                        cacheTime: Date.now()
+                                    }));
+                                });
+                            }
+                        );
                     }
                 );
             }
         );
     }
+    // Otherwise, if your cached courses are up to date, parse them and tell Apifier to run fresh crawls for the next user
+    // Note: ALL TERMS, not just the latest term, should be cached
     else {
         $scope.courses = JSON.parse(localStorage.getItem('allTerms')).courses;
         $scope.departments = JSON.parse(localStorage.getItem('allTerms')).departments;
         $scope.terms = JSON.parse(localStorage.getItem('allTerms')).terms;
 
-        $scope.selectedTerm = $scope.terms[0];
-        $scope.allLimitMax = $scope.courses[$scope.currentTermIndex].length;
-        $scope.parseDump();
+        uiInit();
 
-        //  There's a difference between lastCrawlTime and cacheTime!
-        $.get(
-            'https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execs?token=zABEDXTrqrj5axRQfaFKydjA7',
-            function (response) {
-                var latestCrawl = response[response.length-1];
+        $http.get(
+            'https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execs?token=zABEDXTrqrj5axRQfaFKydjA7')
+            .then(function (response) {
+                var latestCrawl = response.data[response.data.length-1];
                 var lastCrawlTime = new Date(latestCrawl.finishedAt);
                 if (hourDifference(Date.now(), lastCrawlTime) > 1) {
                     //  run latest-term-crawler
                     $.post('https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execute?token=tY7DvkDnZbMADSJj32XnK3DnJ');
-                    //  run other-terms-crawler
+                    //  run other-terms'-crawler
                     $.post('https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execute?token=NjBybQ5CEvWEX8HA9hzbW2YZJ');
                 }
-            }
-        );
-    }
-
-    if (typeof localStorage.getItem('allTerms') === 'undefined') {
-        $.get(
-            //  get other-term-crawler's last result
-            'https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execs?token=KAimurKeCXy7FyvN5teEZAs9W',
-            function (response) {
-                var latestCrawl = response[response.length-1];
-                $.get(latestCrawl.resultsUrl, function(results) {
-                    var otherTerms = results; //  lastTerm not included
-                    for (var i = 1; i < otherTerms.length; ++i) { //  skips index page
-                        var resultsPerTerm = otherTerms[i].pageFunctionResult;
-                        $scope.courses.push(resultsPerTerm.courses);
-                        $scope.departments.push(['All'].concat(resultsPerTerm.departments));
-                    }
-                    $scope.filter['department'] = 'All';
-                    localStorage.setItem('allTerms', JSON.stringify({
-                        courses: $scope.courses,
-                        departments: $scope.departments,
-                        terms: $scope.terms,
-                        cacheTime: Date.now()
-                    }));
-                });
             }
         );
     }
@@ -203,7 +203,7 @@ app.controller('courseListCtrl', function($scope, timeCalc) {
     });
 
     //  Manage localStorage and textarea, so the former is never null so it can be concatenated to
-    if (!localStorage.getItem('crns')) {
+    if (localStorage.getItem('crns') === null) {
         localStorage.setItem('crns', '');
     }
     else {
