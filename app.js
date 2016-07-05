@@ -47,8 +47,8 @@ app.controller('courseListCtrl', function($scope, $http, timeCalc) {
         }
     }
 
-    function hourDifference(later, earlier) {
-        return (later - earlier)/(1000 * 60 * 60);
+    function hourDifference(dateA, dateB) {
+        return Math.abs((dateA - dateB)/(1000 * 60 * 60));
     }
 
     function uiInit() {
