@@ -5,4 +5,7 @@
 ## Description
 
 The unofficial course scheduler for UC Merced.
-No more chicken scratch on printed schedule worksheets. It's about time UC Merced's scheduling process got up to speed!
+
+I was the last person to finish my freshman orientation at UC Merced because we could only plan our class schedules on paper. I made this app so that no other UC Merced student would have to go through that again.
+
+Check it out at [ucmercedule.com](http://ucmercedule.com/)!
