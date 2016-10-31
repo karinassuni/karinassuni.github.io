@@ -64,7 +64,7 @@ app.controller('courseListCtrl', function($scope, $http, timeCalc) {
         // get the list of recent crawls
         $http.get('https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execs?token=zABEDXTrqrj5axRQfaFKydjA7')
             .then(function (response) {
-                var latestCrawl = response.data[response.data.length-1];
+                var latestCrawl = response.data[0];
                 // get the results of the most recent crawl from the above list of recent crawls
                 $http.get(latestCrawl.resultsUrl)
                     .then(function(results) {
@@ -120,13 +120,13 @@ app.controller('courseListCtrl', function($scope, $http, timeCalc) {
         $http.get(
             'https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execs?token=zABEDXTrqrj5axRQfaFKydjA7')
             .then(function (response) {
-                var latestCrawl = response.data[response.data.length-1];
+                var latestCrawl = response.data[0];
                 var lastCrawlTime = new Date(latestCrawl.finishedAt);
                 if (hourDifference(Date.now(), lastCrawlTime) > 1) {
                     //  run latest-term-crawler
-                    //$.post('https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execute?token=tY7DvkDnZbMADSJj32XnK3DnJ');
+                    $.post('https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execute?token=tY7DvkDnZbMADSJj32XnK3DnJ');
                     //  run other-terms'-crawler
-                    //$.post('https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execute?token=NjBybQ5CEvWEX8HA9hzbW2YZJ');
+                    $.post('https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20index/execute?token=NjBybQ5CEvWEX8HA9hzbW2YZJ');
                 }
             }
         );
