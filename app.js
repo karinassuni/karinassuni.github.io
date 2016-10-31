@@ -60,7 +60,7 @@ app.controller('courseListCtrl', function($scope, $http, timeCalc) {
 
     // If there are no cached courses, or if the cached courses expired, retrieve a fresh JSON of the LATEST TERM + LIST OF OTHER TERMS
     //if (localStorage.getItem('allTerms') === null || hourDifference(Date.now(), JSON.parse(localStorage.getItem('allTerms')).cacheTime) > 1) {
-    if (false) {
+    if (true) {
         // get the list of recent crawls
         $http.get('https://api.apifier.com/v1/P6wD9NixEome55jW4/crawlers/UCMCourses%20-%20last%20term/execs?token=zABEDXTrqrj5axRQfaFKydjA7')
             .then(function (response) {
